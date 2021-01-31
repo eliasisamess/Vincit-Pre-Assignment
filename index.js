@@ -13,7 +13,7 @@ function printNow(obj) {
 }
 
 async function app(file) {
-  let a = await csv().fromFile(file);
-  return a;
+  return await csv().fromFile(file);
 }
+
 app(path).then((result) => printNow(result));
