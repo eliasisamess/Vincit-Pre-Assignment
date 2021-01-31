@@ -9,9 +9,7 @@ const json = require("json");
 const path = "HistoricalQuotes-2.csv";
 
 function printNow(obj) {
-  for (let i = 0; i < obj.length; i++) {
-    console.log(`${obj[i].Date} ${obj[i].High}`);
-  }
+  obj.forEach((entry) => console.log(entry.Date));
 }
 
 async function app(file) {
