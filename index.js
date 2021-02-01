@@ -17,89 +17,96 @@ function printAll(obj) {
   );
 }
 
-function findLongestTrend(array) {
-  let longestTrend;
-  let startingIndex = 1;
+function findLongestTrend(array, mode) {
+  console.log("gonna find longest trend now");
+  let longest = {
+    trendLength: 0,
+    firstStartingDay: {},
+    firstEndingDay: {},
+    others: [],
+  };
+  let startingIndex = mode;
   let trend = 0;
   for (let i = startingIndex; i < array.length; i++) {
     let closingToday = array[i]["Close/Last"];
-    let closingYesterday = array[i - 1]["Close/Last"];
+    // huom tuleeko ongelmia? pitäiskö olla hardcoded ykköset?
+    let closingYesterday = array[i - mode]["Close/Last"];
     console.log(
       `Today is ${array[
         i
-      ].Date.toDateString()} and closing is ${closingToday} vs ${closingYesterday}`
+      ].Date.toDateString()} and closing is ${closingToday} vs ${closingYesterday} (${array[
+        i - 1
+      ].Date.toDateString()})`
     );
     if (closingToday > closingYesterday) {
+      if (trend === 0) {
+        console.log("New trend has started on " + array[i].Date.toDateString());
+      }
       trend++;
       console.log("trend is now " + trend);
-      longestTrend = trend;
     } else if (closingToday < closingYesterday) {
-      console.log(
-        `putting trend to 0 closing is ${closingToday} vs yesterday ${closingYesterday}`
-      );
-
+      if (longest.trendLength < trend) {
+        longest.trendLength = trend;
+        console.log("longest trend set to " + longest.trendLength);
+        longest.firstStartingDay = array[i - trend].Date;
+        console.log(
+          "longest trend startingDay set to " + longest.firstEndingDay
+        );
+        longest.firstEndingDay = array[i - 1].Date;
+        console.log("longest trend endingDay set to " + longest.firstEndingDay);
+      } else if (longest.trendLength === trend) {
+        longest.others.push({
+          startingDay: array[i - trend].Date,
+          endingDay: array[i - 1].Date,
+        });
+      }
       trend = 0;
     }
   }
-  console.log("after for loop longest trend is " + longestTrend);
-
-  // console.log("longest trend found was " + best);
-  // for (let i = 1; i < array.length; i++) {
-  //   let today = array[i]["Close/Last"];
-  //   let yesterday = array[i - 1]["Close/Last"];
-  //   //    let tomorrow = array[i + 1]["Close/Last"];
-  //   if (today > yesterday) {
-  //     console.log(
-  //       `Today is ${array[i].Date} and closing is ${today} vs ${yesterday}`
-  //     );
-  //     longestTrend++;
-  //     console.log(`longest trend is now ${longestTrend}`);
-  //   }
-  //   // if (tomorrow < today) {
-  //   //   longestTrend = 0;
-  //   // }
-  // }
+  console.log(
+    "During given timerange, longest trend was " +
+      longest.trendLength +
+      " days and there were " +
+      longest.others.length +
+      " other trends as long."
+  );
+  console.log(
+    "First one started on " +
+      longest.firstStartingDay.toDateString() +
+      " and ended on " +
+      longest.firstEndingDay.toDateString()
+  );
+  console.log("others were:");
+  longest.others.forEach((item) =>
+    console.log(
+      `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
+    )
+  );
 }
 
-// Returns all entries from object between given date range
+// Returns all entries from object between given date range and also dates before the start day, according to mode (how many past entries)
 async function findEntriesByDate(obj, start, end, mode) {
   let chosenEntries = [];
-  let daysToSubtract = mode;
   obj.forEach((x) => {
     x.Date = new Date(x.Date);
   });
-  console.log("changed dates to date objects");
   obj.sort(function (a, b) {
     return a.Date - b.Date;
   });
-  console.log("sorted array");
-
-  // obj.forEach((entry) => {
-  //   if (entry.Date <= end && entry.Date >= start) {
-  //     chosenEntries.push(entry);
-  //     console.log("added " + entry.Date.toDateString() + " to array");
-  //   }
-  // });
-
+  if (start.getTime() < obj[0].Date.getTime()) {
+    throw new Error("Dates don't match");
+  }
   for (let i = 0; i < obj.length; i++) {
     if (obj[i].Date.getTime() === start.getTime()) {
-      console.log(
-        "a eli " +
-          obj[i].Date.toDateString() +
-          " equals start eli " +
-          start.toDateString()
-      );
       for (let j = mode; j >= 0; j--) {
         chosenEntries.push(obj[i - j]);
-        console.log("spadded " + obj[i - j].Date.toDateString() + " to array");
       }
     } else if (obj[i].Date >= start && obj[i].Date <= end) {
       chosenEntries.push(obj[i]);
-      console.log("added " + obj[i].Date.toDateString() + " to array");
     }
   }
-  console.log("konsoloidaan viel chosenentries tähä");
-  printAll(chosenEntries);
+  // console.log("konsoloidaan viel chosenentries tähä");
+  // printAll(chosenEntries);
   return chosenEntries;
 }
 
@@ -112,24 +119,23 @@ async function readFileToJson(file) {
 
 // START HERE
 
-let firstDay = new Date("01/05/2021");
+let firstDay = new Date("02/05/2012");
 let lastDay = new Date("01/19/2021");
 
-// a = 1
-// b = 0
-// c = 5
+// A = 1
+// B = 0
+// C = 5
 let mode = 1;
 
 console.log("Welcome to MVP stock analysist");
 console.log(
   `Date range is ${firstDay.toDateString()} and ${lastDay.toDateString()}`
 );
-const path = "HistoricalQuotes-2.csv";
-console.log("Reading now");
+const path = "HistoricalQuotes.csv";
+console.log("using " + path);
 readFileToJson(path).then((result) =>
   findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
     //    printAll(toPrint);
-    // findLongestTrend(toPrint);
-    console.log("moro");
+    findLongestTrend(toPrint, mode);
   })
 );
