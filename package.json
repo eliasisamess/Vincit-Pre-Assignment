@@ -2,7 +2,7 @@
   "name": "vincit-pre-assignment",
   "version": "1.0.0",
   "description": "MVP Stock Market Analysis for Scrooge McDuck",
-  "main": "Index.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -17,7 +17,6 @@
   },
   "homepage": "https://github.com/eliasisamess/Vincit-Pre-Assignment#readme",
   "dependencies": {
-    "csvtojson": "^2.0.10",
-    "json": "^10.0.0"
+    "csvtojson": "^2.0.10"
   }
 }

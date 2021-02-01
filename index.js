@@ -17,45 +17,46 @@ function printAll(obj) {
   );
 }
 
-function findLongestTrend(array, mode) {
-  console.log("gonna find longest trend now");
+// Returns longest bullish (upwards) trends during given time range.
+function findLongestTrend(array) {
   let longest = {
     trendLength: 0,
     firstStartingDay: {},
     firstEndingDay: {},
     others: [],
   };
-  let startingIndex = mode;
+  let startingIndex = 1;
   let trend = 0;
   for (let i = startingIndex; i < array.length; i++) {
     let closingToday = array[i]["Close/Last"];
-    // huom tuleeko ongelmia? pitäiskö olla hardcoded ykköset?
-    let closingYesterday = array[i - mode]["Close/Last"];
-    console.log(
-      `Today is ${array[
-        i
-      ].Date.toDateString()} and closing is ${closingToday} vs ${closingYesterday} (${array[
-        i - 1
-      ].Date.toDateString()})`
-    );
+    let closingYesterday = array[i - 1]["Close/Last"];
+    // console.log(
+    //   `Today is ${array[
+    //     i
+    //   ].Date.toDateString()} and closing is ${closingToday} vs ${closingYesterday} (${array[
+    //     i - 1
+    //   ].Date.toDateString()})`
+    // );
     if (closingToday > closingYesterday) {
-      if (trend === 0) {
-        console.log("New trend has started on " + array[i].Date.toDateString());
-      }
+      // if (trend === 0) {
+      //   console.log("New trend has started on " + array[i].Date.toDateString());
+      // }
       trend++;
-      console.log("trend is now " + trend);
+      // console.log("trend is now " + trend);
     } else if (closingToday < closingYesterday) {
       if (longest.trendLength < trend) {
         longest.trendLength = trend;
-        console.log("longest trend set to " + longest.trendLength);
+        // console.log("longest trend set to " + longest.trendLength);
         longest.firstStartingDay = array[i - trend].Date;
-        console.log(
-          "longest trend startingDay set to " + longest.firstEndingDay
-        );
+        // console.log(
+        //   "longest trend startingDay set to " + longest.firstEndingDay
+        // );
         longest.firstEndingDay = array[i - 1].Date;
-        console.log("longest trend endingDay set to " + longest.firstEndingDay);
+        // console.log("longest trend endingDay set to " + longest.firstEndingDay);
       } else if (longest.trendLength === trend) {
+        // console.log("okay now " + longest.trendLength + trend);
         longest.others.push({
+          trendLength: trend,
           startingDay: array[i - trend].Date,
           endingDay: array[i - 1].Date,
         });
@@ -63,6 +64,10 @@ function findLongestTrend(array, mode) {
       trend = 0;
     }
   }
+  // Let's clean the trend saving array from trends that were shorter than longest
+  longest.others = longest.others.filter(
+    (item) => !(item.trendLength < longest.trendLength)
+  );
   console.log(
     "During given timerange, longest trend was " +
       longest.trendLength +
@@ -85,6 +90,7 @@ function findLongestTrend(array, mode) {
 }
 
 // Returns all entries from object between given date range and also dates before the start day, according to mode (how many past entries)
+// Throws error if time range doesn't match with given data.
 async function findEntriesByDate(obj, start, end, mode) {
   let chosenEntries = [];
   obj.forEach((x) => {
@@ -105,8 +111,6 @@ async function findEntriesByDate(obj, start, end, mode) {
       chosenEntries.push(obj[i]);
     }
   }
-  // console.log("konsoloidaan viel chosenentries tähä");
-  // printAll(chosenEntries);
   return chosenEntries;
 }
 
@@ -119,8 +123,8 @@ async function readFileToJson(file) {
 
 // START HERE
 
-let firstDay = new Date("02/05/2012");
-let lastDay = new Date("01/19/2021");
+let firstDay = new Date("02/01/2011");
+let lastDay = new Date("01/29/2021");
 
 // A = 1
 // B = 0
@@ -136,6 +140,8 @@ console.log("using " + path);
 readFileToJson(path).then((result) =>
   findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
     //    printAll(toPrint);
-    findLongestTrend(toPrint, mode);
+    findLongestTrend(toPrint);
   })
 );
+
+// HUOM! Jos annetaan alkupäiväksi sama kuin mistä csv alkaa, tulee ongelma kun jossain oli se i-1 indexi, eli TypeError: Cannot read property 'Close/Last' of undefined
