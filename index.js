@@ -66,29 +66,40 @@ async function findEntriesByDate(obj, start, end, mode) {
   let chosenEntries = [];
   let daysToSubtract = mode;
   obj.forEach((x) => {
-    console.log("changing " + x.Date);
     x.Date = new Date(x.Date);
   });
+  console.log("changed dates to date objects");
   obj.sort(function (a, b) {
     return a.Date - b.Date;
   });
-  printAll(obj);
-  console.log("days to subtract " + daysToSubtract);
+  console.log("sorted array");
 
-  //  let start = new Date(startDate);
-  //    let end = new Date(endDate);
-  //  start.setDate(start.getDate() - daysToSubtract);
+  // obj.forEach((entry) => {
+  //   if (entry.Date <= end && entry.Date >= start) {
+  //     chosenEntries.push(entry);
+  //     console.log("added " + entry.Date.toDateString() + " to array");
+  //   }
+  // });
+
   for (let i = 0; i < obj.length; i++) {
-    let a = new Date(obj[i].Date);
-    if (a <= end && a >= start) {
-      obj[i].Date = a;
+    if (obj[i].Date.getTime() === start.getTime()) {
+      console.log(
+        "a eli " +
+          obj[i].Date.toDateString() +
+          " equals start eli " +
+          start.toDateString()
+      );
+      for (let j = mode; j >= 0; j--) {
+        chosenEntries.push(obj[i - j]);
+        console.log("spadded " + obj[i - j].Date.toDateString() + " to array");
+      }
+    } else if (obj[i].Date >= start && obj[i].Date <= end) {
       chosenEntries.push(obj[i]);
       console.log("added " + obj[i].Date.toDateString() + " to array");
     }
   }
-  chosenEntries.sort(function (a, b) {
-    return a.Date - b.Date;
-  });
+  console.log("konsoloidaan viel chosenentries tähä");
+  printAll(chosenEntries);
   return chosenEntries;
 }
 
@@ -118,6 +129,7 @@ console.log("Reading now");
 readFileToJson(path).then((result) =>
   findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
     //    printAll(toPrint);
-    findLongestTrend(toPrint);
+    // findLongestTrend(toPrint);
+    console.log("moro");
   })
 );
