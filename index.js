@@ -46,13 +46,15 @@ function findLongestTrend(array) {
     } else if (closingToday < closingYesterday) {
       if (longest.trendLength < trend) {
         longest.trendLength = trend;
-        // console.log("longest trend set to " + longest.trendLength);
+        console.log("longest trend set to " + longest.trendLength);
         longest.firstStartingDay = array[i - trend].Date;
-        // console.log(
-        //   "longest trend startingDay set to " + longest.firstEndingDay
-        // );
+        console.log(
+          "longest trend startingDay set to " + longest.firstStartingDay
+        );
         longest.firstEndingDay = array[i - 1].Date;
-        // console.log("longest trend endingDay set to " + longest.firstEndingDay);
+        console.log("longest trend endingDay set to " + longest.firstEndingDay);
+        longest.others = [];
+        console.log("cleared the others because new longest trend was set");
       } else if (longest.trendLength === trend) {
         // console.log("okay now " + longest.trendLength + trend);
         longest.others.push({
@@ -64,10 +66,6 @@ function findLongestTrend(array) {
       trend = 0;
     }
   }
-  // Let's clean the trend saving array from trends that were shorter than longest
-  longest.others = longest.others.filter(
-    (item) => !(item.trendLength < longest.trendLength)
-  );
   console.log(
     "During given timerange, longest trend was " +
       longest.trendLength +
