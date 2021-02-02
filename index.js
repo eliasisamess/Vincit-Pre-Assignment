@@ -20,19 +20,20 @@ function printAll(obj) {
 function formatStockMoney(string) {
   let formatted = string.replace("$", "");
   formatted = parseFloat(formatted);
-  console.log(`formatting stock money ${string} to ${formatted}`);
+  // console.log(`formatting stock money ${string} to ${formatted}`);
   return formatted.toFixed(5);
 }
 
+function countDifference(a, b) {
+  let result = a - b;
+  return result.toFixed(5);
+}
 function countPercentageDifference(a, b) {
-  console.log(
-    `Counting percentage difference between ${a} and ${b} which is ${
-      (a / b) * 100 - 100
-    }`
-  );
   let result = (a / b) * 100 - 100;
-
-  return result;
+  // console.log(
+  //   `Counting percentage difference between ${a} and ${b} which is ${result}`
+  // );
+  return result.toFixed(5);
 }
 
 function countSimpleMovingAverage(array) {
@@ -40,15 +41,15 @@ function countSimpleMovingAverage(array) {
   let sum = 0;
   array.forEach((item) => {
     sum = parseFloat(sum) + parseFloat(item);
-    console.log(`item is now ${item} and sum is ${sum}`);
+    // console.log(`item is now ${item} and sum is ${sum}`);
   });
   let result = sum / array.length;
   return result.toFixed(5);
 }
 
 function findBestSMA5(array) {
-  console.log("Finding best sma5");
-  let listOfResults = {};
+  // console.log("Finding best sma5");
+  let listOfResults = [];
   let startingIndex = 5;
   for (let i = startingIndex; i < array.length; i++) {
     let current;
@@ -60,34 +61,57 @@ function findBestSMA5(array) {
     let tempArray = [];
     for (let j = 5; j > 0; j--) {
       tempArray.push(array[i - j].Open);
-      console.log(
-        `Pushed ${array[i - j].Date.toDateString()} (${
-          array[i - j].Open
-        }) to tempArray`
-      );
+      // console.log(
+      //   `Pushed ${array[i - j].Date.toDateString()} (${
+      //     array[i - j].Open
+      //   }) to tempArray`
+      // );
     }
     current = countSimpleMovingAverage(tempArray);
-    console.log(
-      `Day is ${array[i].Date.toDateString()} open is ${
-        array[i].Open
-      } and SMA5 is ${current}`
-    );
+    // console.log(
+    //   `Day is ${array[i].Date.toDateString()} open is ${
+    //     array[i].Open
+    //   } and SMA5 is ${current}`
+    // );
     listOfResults.push({
       Date: array[i].Date,
       Open: array[i].Open,
-      SMA5: current,
+      Sma5: current,
       Diff: countPercentageDifference(array[i].Open, current),
     });
   }
   console.log("Here is a list of results:");
+  listOfResults.sort(function (a, b) {
+    return b.Diff - a.Diff;
+  });
   listOfResults.forEach((item) =>
-    console.log(`Date: ${item.Date.toDateString()} Open: `)
+    console.log(
+      `DATE: ${item.Date.toDateString()} OPEN: $${item.Open} SMA5: $${
+        item.Sma5
+      } DIFF: ${item.Diff > 0 ? "+" + item.Diff : item.Diff}%`
+    )
   );
 }
 
-function findTradingVolume(array) {}
+function findTradingVolume(array) {
+  array = array.sort(function (a, b) {
+    return b.Volume - a.Volume;
+  });
 
-function findPriceChanges(array) {}
+  array.forEach((item) =>
+    console.log(`DATE ${item.Date.toDateString()} VOLUME: ${item.Volume}`)
+  );
+}
+
+function findPriceChanges(array) {
+  array.forEach((item) =>
+    console.log(
+      `DATE: ${item.Date.toDateString()} HIGH: ${item.High} LOW: ${
+        item.Low
+      } CHANGE: ${countDifference(item.High, item.Low)}`
+    )
+  );
+}
 // Returns longest bullish (upwards) trends during given time range.
 function findLongestTrends(array) {
   // This variable will include the (first) longest trend from given time range
@@ -230,7 +254,7 @@ let lastDay = new Date("01/29/2021");
 // A = 1
 // B = 0
 // C = 5
-let mode = 5;
+let mode = 0;
 
 console.log("Welcome to MVP stock analysist");
 console.log(
@@ -238,13 +262,15 @@ console.log(
 );
 const path = "HistoricalQuotes-2.csv";
 console.log("using " + path);
-// readFileToJson(path).then((result) =>
-//   findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
-//     // printAll(toPrint);
-//     // findLongestTrends(toPrint);
-//     findBestSMA5(toPrint);
-//   })
-// );
+readFileToJson(path).then((result) =>
+  findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
+    // printAll(toPrint);
+    // findLongestTrends(toPrint);
+    // findBestSMA5(toPrint);
+    // findPriceChanges(toPrint);
+    findTradingVolume(toPrint);
+  })
+);
 
 // // TESTING formatStockMoney function
 // let temp = "$136.092";
