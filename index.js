@@ -30,49 +30,49 @@ function countDifference(a, b) {
 }
 function countPercentageDifference(a, b) {
   let result = (a / b) * 100 - 100;
-  // console.log(
-  //   `Counting percentage difference between ${a} and ${b} which is ${result}`
-  // );
+  console.log(
+    `Counting percentage difference between ${a} and ${b} which is ${result}`
+  );
   return result.toFixed(5);
 }
 
 function countSimpleMovingAverage(array) {
-  // console.log(`Counting simple moving average now`);
+  console.log(`Counting simple moving average now`);
   let sum = 0;
   array.forEach((item) => {
     sum = parseFloat(sum) + parseFloat(item);
-    // console.log(`item is now ${item} and sum is ${sum}`);
+    console.log(`item is now ${item} and sum is ${sum}`);
   });
   let result = sum / array.length;
   return result.toFixed(5);
 }
 
 function findBestSMA5(array) {
-  // console.log("Finding best sma5");
+  console.log("Finding best sma5");
   let listOfResults = [];
   let startingIndex = 5;
   for (let i = startingIndex; i < array.length; i++) {
     let current;
-    // console.log(
-    //   `Today is ${array[i].Date.toDateString()} and opening price is ${
-    //     array[i].Open
-    //   }`
-    // );
+    console.log(
+      `Today is ${array[i].Date.toDateString()} and opening price is ${
+        array[i].Open
+      }`
+    );
     let tempArray = [];
     for (let j = 5; j > 0; j--) {
       tempArray.push(array[i - j].Open);
-      // console.log(
-      //   `Pushed ${array[i - j].Date.toDateString()} (${
-      //     array[i - j].Open
-      //   }) to tempArray`
-      // );
+      console.log(
+        `Pushed ${array[i - j].Date.toDateString()} (${
+          array[i - j].Open
+        }) to tempArray`
+      );
     }
     current = countSimpleMovingAverage(tempArray);
-    // console.log(
-    //   `Day is ${array[i].Date.toDateString()} open is ${
-    //     array[i].Open
-    //   } and SMA5 is ${current}`
-    // );
+    console.log(
+      `Day is ${array[i].Date.toDateString()} open is ${
+        array[i].Open
+      } and SMA5 is ${current}`
+    );
     listOfResults.push({
       Date: array[i].Date,
       Open: array[i].Open,
@@ -81,7 +81,7 @@ function findBestSMA5(array) {
     });
   }
   console.log("Here is a list of results:");
-  listOfResults.sort(function (a, b) {
+  listOfResults.sort((a, b) => {
     return b.Diff - a.Diff;
   });
   listOfResults.forEach((item) =>
@@ -91,19 +91,27 @@ function findBestSMA5(array) {
       } DIFF: ${item.Diff > 0 ? "+" + item.Diff : item.Diff}%`
     )
   );
+  console.log(
+    `done searcging ${array[0].Date.toDateString()} - ${array[
+      array.length - 1
+    ].Date.toDateString()}`
+  );
 }
 
 function findTradingVolume(array) {
-  array = array.sort(function (a, b) {
+  array = array.sort((a, b) => {
     return b.Volume - a.Volume;
   });
-
   array.forEach((item) =>
     console.log(`DATE ${item.Date.toDateString()} VOLUME: ${item.Volume}`)
   );
 }
 
 function findPriceChanges(array) {
+  array = array.sort((a, b) => {
+    return countDifference(b.High, b.Low) - countDifference(a.High, a.Low);
+  });
+
   array.forEach((item) =>
     console.log(
       `DATE: ${item.Date.toDateString()} HIGH: ${item.High} LOW: ${
@@ -116,91 +124,99 @@ function findPriceChanges(array) {
 function findLongestTrends(array) {
   // This variable will include the (first) longest trend from given time range
   // and others that are the same length
-  let longest = {
-    firstTrendLength: 0,
+  let longestTrends = {
+    firstLength: 1,
     firstStartingDay: {},
     firstEndingDay: {},
     others: [],
   };
 
-  // findEntriesByDate function will search for either 1 or 5 entries before
-  // the given time range starts, according to if one is looking for either
-  // upward trends (this function) or best price to SMA 5 (findBestSMA5 function)
-  let startingIndex = 1;
-  let trend = 0;
+  let trendCounter = 1;
 
   // We go through the array using for loop and search for trends
-  for (let i = startingIndex; i < array.length; i++) {
+  // Start from index 1, because findEntriesByDate function will
+  // search for either 1 or 5 entries before the given time range
+  // starts, according to if one is looking for either upward
+  // trends (this function) or best price to SMA 5 (findBestSMA5 function)
+  for (let i = 1; i < array.length; i++) {
+    console.log("index round is " + i);
     // Declare closing prices of this round (i)
     let closingToday = array[i]["Close/Last"];
     let closingYesterday = array[i - 1]["Close/Last"];
 
-    // // START OF TEST LOGS
-    // console.log(
-    //   `Today is ${array[
-    //     i
-    //   ].Date.toDateString()} and closing is ${closingToday} vs ${closingYesterday} (${array[
-    //     i - 1
-    //   ].Date.toDateString()})`
-    // );
-    // // END OF TEST LOGS
+    // START OF TEST LOGS
+    console.log(
+      `Today is ${array[
+        i
+      ].Date.toDateString()} and closing is ${closingToday} vs ${closingYesterday} (${array[
+        i - 1
+      ].Date.toDateString()})`
+    );
+    // END OF TEST LOGS
 
     // If todays price is higher than yesterday, we start a new trend
     if (closingToday > closingYesterday) {
-      trend++;
+      console.log(`Closing today is higher than yesterdays`);
 
-      // // START OF TEST LOGS
-      // if (trend === 0) {
-      //   console.log(`New trend has started on ${array[i].Date.toDateString()}`);
-      // }
-      // console.log(`Current trend length is now ${trend} days.`);
-      // // END OF TEST LOGS
+      if (trendCounter === 1) {
+        console.log(
+          `New trend has started on ${array[i - 1].Date.toDateString()}`
+        );
+      }
+      ++trendCounter;
+      console.log(`Current trend length is now ${trendCounter} days.`);
 
       // If todays price is lower than yesterday, we end the trend
-    } else if (closingToday < closingYesterday) {
+    }
+
+    ///////7
+
+    ////////
+    else if (closingToday < closingYesterday) {
+      console.log("closing today is lower");
       // If the ended trend was longer than current longest, we set a new first
       // and clear the others (since they've been shorter, if set already)
-      if (longest.firstTrendLength < trend) {
-        longest.firstTrendLength = trend;
-        longest.firstStartingDay = array[i - trend].Date;
-        longest.firstEndingDay = array[i - 1].Date;
-        longest.others = [];
+      if (longestTrends.firstLength < trendCounter) {
+        longestTrends.firstLength = trendCounter;
+        console.log(`First longest trend set to ${longestTrends.firstLength}.`);
+        longestTrends.firstStartingDay = array[i - trendCounter].Date;
+        longestTrends.firstEndingDay = array[i - 1].Date;
+        console.log(
+          `First longest trend range set to ${longestTrends.firstStartingDay} - ${longestTrends.firstEndingDay}.`
+        );
+        longestTrends.others = [];
+        console.log("Cleared the others because new longest trend was set.");
 
-        // // START OF TEST LOGS
-        // console.log(`First longest trend set to ${longest.firstTrendLength}.`);
-        // console.log(
-        //   `First longest trend range set to ${longest.firstStartingDay} - ${longest.firstEndingDay}.`
-        // );
-        // console.log("Cleared the others because new longest trend was set.");
-        // // END OF TEST LOGS
-        //
         // If the ended trend was as long as the first longest, we add current
         // trend to others[] array.
-      } else if (longest.firstTrendLength === trend) {
-        // console.log(`Found trend as long (${trend}) as the current longest (${longest.firstTrendLength}) and added it to others[]`)
-        longest.others.push({
-          trendLength: trend,
-          startingDay: array[i - trend].Date,
+      } else if (
+        longestTrends.firstLength === trendCounter &&
+        longestTrends.firstLength > 1
+      ) {
+        longestTrends.others.push({
+          trendLength: trendCounter,
+          startingDay: array[i - trendCounter].Date,
           endingDay: array[i - 1].Date,
         });
+        console.log(
+          `Found trend as long (${trendCounter}) as the current longest (${longestTrends.firstLength}) and added it to others[]`
+        );
       }
       // If current trend ended, clear it before next round
-      trend = 0;
+      trendCounter = 1;
     }
   }
   console.log(
-    `Finished looking for trends. During given timerange (${array[
-      startingIndex
-    ].Date.toDateString()} - ${array[
-      array.length - 1
+    `Finished looking for trends. During given timerange (${array[1].Date.toDateString()} - ${array[
+      array.length - 2
     ].Date.toDateString()}) the longest trend was ${
-      longest.firstTrendLength
-    } days and there were ${longest.others.length} other similar trends:`
+      longestTrends.firstLength
+    } days and there were ${longestTrends.others.length} other similar trends:`
   );
   console.log(
-    `${longest.firstStartingDay.toDateString()} - ${longest.firstEndingDay.toDateString()}`
+    `${longestTrends.firstStartingDay.toDateString()} - ${longestTrends.firstEndingDay.toDateString()}`
   );
-  longest.others.forEach((item) =>
+  longestTrends.others.forEach((item) =>
     console.log(
       `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
     )
@@ -220,7 +236,7 @@ async function findEntriesByDate(obj, start, end, mode) {
     item.High = formatStockMoney(item.High);
     item.Low = formatStockMoney(item.Low);
   });
-  obj.sort(function (a, b) {
+  obj.sort((a, b) => {
     return a.Date - b.Date;
   });
   if (start.getTime() < obj[0].Date.getTime()) {
@@ -231,9 +247,20 @@ async function findEntriesByDate(obj, start, end, mode) {
     if (obj[i].Date.getTime() === start.getTime()) {
       for (let j = mode; j >= 0; j--) {
         chosenEntries.push(obj[i - j]);
+        console.log(`added to arhay ${obj[i - j].Date.toDateString()}`);
       }
-    } else if (obj[i].Date >= start && obj[i].Date <= end) {
+    } else if (obj[i].Date >= start && obj[i].Date < end) {
       chosenEntries.push(obj[i]);
+      console.log(`added to arhay ${obj[i].Date.toDateString()}`);
+    }
+    if (obj[i].Date.getTime() === end.getTime()) {
+      chosenEntries.push(obj[i]);
+      console.log(`added to arhay ${obj[i].Date.toDateString()}`);
+      // If mode is 1 (searching for trends), lets add one more
+      if (mode === 1) {
+        chosenEntries.push(obj[i + 1]);
+        console.log(`added to arhay ${obj[i + 1].Date.toDateString()}`);
+      }
     }
   }
   return chosenEntries;
@@ -248,8 +275,8 @@ async function readFileToJson(file) {
 
 // START HERE
 
-let firstDay = new Date("02/05/2020");
-let lastDay = new Date("01/29/2021");
+let firstDay = new Date("01/31/2012");
+let lastDay = new Date("03/9/2020");
 
 // A = 1
 // B = 0
@@ -260,17 +287,23 @@ console.log("Welcome to MVP stock analysist");
 console.log(
   `Date range is ${firstDay.toDateString()} and ${lastDay.toDateString()}`
 );
-const path = "HistoricalQuotes-2.csv";
+const path = "HistoricalQuotes.csv";
 console.log("using " + path);
-readFileToJson(path).then((result) =>
-  findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
-    // printAll(toPrint);
-    // findLongestTrends(toPrint);
-    // findBestSMA5(toPrint);
-    // findPriceChanges(toPrint);
-    findTradingVolume(toPrint);
-  })
-);
+
+async function main() {
+  await readFileToJson(path).then((result) =>
+    findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
+      printAll(toPrint);
+      findLongestTrends(toPrint);
+      findBestSMA5(toPrint);
+      findPriceChanges(toPrint);
+      findTradingVolume(toPrint);
+    })
+  );
+}
+
+main();
+// process.exit();
 
 // // TESTING formatStockMoney function
 // let temp = "$136.092";
