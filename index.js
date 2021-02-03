@@ -98,6 +98,28 @@ function findBestSMA5(array) {
   );
 }
 
+function findVolumesAndPriceChanges(array) {
+  let newArray = [];
+  array.forEach((item) =>
+    newArray.push({
+      Date: item.Date,
+      Volume: item.Volume,
+      Change: countDifference(item.High, item.Low),
+    })
+  );
+  newArray = newArray.sort((a, b) => {
+    return b.Volume - a.Volume || b.Change - a.Change;
+  });
+  newArray.forEach((item) =>
+    console.log(
+      `DATE: ${item.Date.toDateString()} VOLUME: ${item.Volume} CHANGE: ${
+        item.Change
+      }`
+    )
+  );
+  // return newArray;
+}
+
 function findTradingVolume(array) {
   array = array.sort((a, b) => {
     return b.Volume - a.Volume;
@@ -275,29 +297,31 @@ async function readFileToJson(file) {
 
 // START HERE
 
-let firstDay = new Date("01/31/2012");
-let lastDay = new Date("03/9/2020");
+let firstDay = new Date("03/01/2020");
+let lastDay = new Date("03/03/2020");
 
 // A = 1
 // B = 0
 // C = 5
-let mode = 0;
+let mode = 1;
 
 console.log("Welcome to MVP stock analysist");
 console.log(
   `Date range is ${firstDay.toDateString()} and ${lastDay.toDateString()}`
 );
-const path = "HistoricalQuotes.csv";
+const path = "HistoricalQuotes-2.csv";
 console.log("using " + path);
 
 async function main() {
   await readFileToJson(path).then((result) =>
-    findEntriesByDate(result, firstDay, lastDay, mode).then((toPrint) => {
-      printAll(toPrint);
-      findLongestTrends(toPrint);
-      findBestSMA5(toPrint);
-      findPriceChanges(toPrint);
-      findTradingVolume(toPrint);
+    findEntriesByDate(result, firstDay, lastDay, mode).then((array) => {
+      if (mode === 1) {
+        findLongestTrends(array);
+      } else if (mode === 0) {
+        findVolumesAndPriceChanges(array);
+      } else if (mode === 5) {
+        findBestSMA5(array);
+      }
     })
   );
 }
