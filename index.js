@@ -143,7 +143,7 @@ function findPriceChanges(array) {
   );
 }
 // Returns longest bullish (upwards) trends during given time range.
-function findLongestTrends(array) {
+function findLongestTrends(array, start, end) {
   // This variable will include the (first) longest trend from given time range
   // and others that are the same length
   let longestTrends = {
@@ -229,11 +229,7 @@ function findLongestTrends(array) {
     }
   }
   console.log(
-    `Finished looking for trends. During given timerange (${array[1].Date.toDateString()} - ${array[
-      array.length - 2
-    ].Date.toDateString()}) the longest trend was ${
-      longestTrends.firstLength
-    } days and there were ${longestTrends.others.length} other similar trends:`
+    `Finished looking for trends. During given timerange the longest trend was ${longestTrends.firstLength} days and there were ${longestTrends.others.length} other similar trends:`
   );
   console.log(
     `${longestTrends.firstStartingDay.toDateString()} - ${longestTrends.firstEndingDay.toDateString()}`
@@ -298,7 +294,7 @@ async function readFileToJson(file) {
 // START HERE
 
 let firstDay = new Date("03/01/2020");
-let lastDay = new Date("03/03/2020");
+let lastDay = new Date("03/04/2020");
 
 // A = 1
 // B = 0
@@ -316,7 +312,7 @@ async function main() {
   await readFileToJson(path).then((result) =>
     findEntriesByDate(result, firstDay, lastDay, mode).then((array) => {
       if (mode === 1) {
-        findLongestTrends(array);
+        findLongestTrends(array, firstDay, lastDay);
       } else if (mode === 0) {
         findVolumesAndPriceChanges(array);
       } else if (mode === 5) {
