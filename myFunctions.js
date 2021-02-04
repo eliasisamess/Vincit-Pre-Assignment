@@ -4,7 +4,6 @@ const helpers = {
   formatStockMoney: (string) => {
     let formatted = string.replace("$", "");
     formatted = parseFloat(formatted);
-    // console.log(`formatting stock money ${string} to ${formatted}`);
     return formatted.toFixed(5);
   },
   countDifference: (a, b) => {
@@ -13,17 +12,12 @@ const helpers = {
   },
   countPercentageDifference: (a, b) => {
     let result = (a / b) * 100 - 100;
-    // console.log(
-    //   `Counting percentage difference between ${a} and ${b} which is ${result}`
-    // );
     return result.toFixed(5);
   },
   countSimpleMovingAverage: (array) => {
-    // console.log(`Counting simple moving average now`);
     let sum = 0;
     array.forEach((item) => {
       sum = parseFloat(sum) + parseFloat(item);
-      // console.log(`item is now ${item} and sum is ${sum}`);
     });
     let result = sum / array.length;
     return result.toFixed(5);
@@ -267,10 +261,10 @@ const finders = {
         chosenEntries.push(obj[i]);
         console.log(`added last ${obj[i].Date.toDateString()}`);
         // If mode is 1 (searching for trends), lets add one more
-        if (mode === 1) {
-          chosenEntries.push(obj[i + 1]);
-          console.log(`added extra ${obj[i + 1].Date.toDateString()}`);
-        }
+        // if (mode === 1) {
+        //   chosenEntries.push(obj[i + 1]);
+        //   console.log(`added extra ${obj[i + 1].Date.toDateString()}`);
+        // }
       }
     }
     return chosenEntries;
