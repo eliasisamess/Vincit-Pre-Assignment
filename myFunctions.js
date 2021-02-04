@@ -38,76 +38,35 @@ const helpers = {
   //     )
   //   );
   // },
-  entriesByDate: async (obj, start, end, mode) => {
-    let chosenEntries = [];
-    // Format each entry to date objects, integers and floats
-    obj.forEach((item) => {
-      item.Date = new Date(item.Date);
-      item["Close/Last"] = helpers.formatStockMoney(item["Close/Last"]);
-      item.Volume = parseInt(item.Volume);
-      item.Open = helpers.formatStockMoney(item.Open);
-      item.High = helpers.formatStockMoney(item.High);
-      item.Low = helpers.formatStockMoney(item.Low);
-    });
-    obj.sort((a, b) => {
-      return a.Date - b.Date;
-    });
-    if (start.getTime() < obj[0].Date.getTime()) {
-      throw new Error("Dates don't match");
-    }
-    // Find array objects during
-    for (let i = 0; i < obj.length; i++) {
-      if (obj[i].Date.getTime() === start.getTime()) {
-        for (let j = mode; j >= 0; j--) {
-          chosenEntries.push(obj[i - j]);
-          // console.log(`added to arhay ${obj[i - j].Date.toDateString()}`);
-        }
-      } else if (obj[i].Date >= start && obj[i].Date < end) {
-        chosenEntries.push(obj[i]);
-        // console.log(`added to arhay ${obj[i].Date.toDateString()}`);
-      }
-      if (obj[i].Date.getTime() === end.getTime()) {
-        chosenEntries.push(obj[i]);
-        // console.log(`added to arhay ${obj[i].Date.toDateString()}`);
-        // If mode is 1 (searching for trends), lets add one more
-        if (mode === 1) {
-          chosenEntries.push(obj[i + 1]);
-          // console.log(`added to arhay ${obj[i + 1].Date.toDateString()}`);
-        }
-      }
-    }
-    return chosenEntries;
-  },
 };
 
 const finders = {
-  async bestSMA5(data, start, end, mode) {
-    let array = await helpers.entriesByDate(data, start, end, mode);
-    // console.log("Finding best sma5");
+  async bestSMA5(array) {
+    console.log("Finding best sma5");
     let listOfResults = [];
     let startingIndex = 5;
     for (let i = startingIndex; i < array.length; i++) {
       let current;
-      // console.log(
-      //   `Today is ${array[i].Date.toDateString()} and opening price is ${
-      //     array[i].Open
-      //   }`
-      // );
+      console.log(
+        `Today is ${array[i].Date.toDateString()} and opening price is ${
+          array[i].Open
+        }`
+      );
       let tempArray = [];
       for (let j = 5; j > 0; j--) {
         tempArray.push(array[i - j].Open);
-        // console.log(
-        //   `Pushed ${array[i - j].Date.toDateString()} (${
-        //     array[i - j].Open
-        //   }) to tempArray`
-        // );
+        console.log(
+          `Pushed ${array[i - j].Date.toDateString()} (${
+            array[i - j].Open
+          }) to tempArray`
+        );
       }
       current = helpers.countSimpleMovingAverage(tempArray);
-      // console.log(
-      //   `Day is ${array[i].Date.toDateString()} open is ${
-      //     array[i].Open
-      //   } and SMA5 is ${current}`
-      // );
+      console.log(
+        `Day is ${array[i].Date.toDateString()} open is ${
+          array[i].Open
+        } and SMA5 is ${current}`
+      );
       listOfResults.push({
         Date: array[i].Date,
         Open: array[i].Open,
@@ -133,8 +92,7 @@ const finders = {
     );
   },
   // Returns longest bullish (upwards) trends during given time range.
-  async longestTrends(data, start, end, mode) {
-    let array = await helpers.entriesByDate(data, start, end, mode);
+  async longestTrends(array) {
     // This variable will include the (first) longest trend from given time range
     // and others that are the same length
     let longestTrends = {
@@ -233,8 +191,7 @@ const finders = {
       )
     );
   },
-  async volumesAndPriceChanges(data, start, end, mode) {
-    let array = await helpers.entriesByDate(data, start, end, mode);
+  async volumesAndPriceChanges(array) {
     let newArray = [];
     array.forEach((item) =>
       newArray.push({
@@ -260,8 +217,57 @@ const finders = {
   // Read csv file to json
   readFileToJson: async (file) => {
     let entries = await csv().fromFile(file);
-    // console.log(JSON.stringify(entries));
     return entries;
+  },
+  entriesByDate(obj, mode, dates) {
+    let chosenEntries = [];
+    // Format each entry to date objects, integers and floats
+    obj.forEach((item) => {
+      item.Date = new Date(item.Date);
+      item["Close/Last"] = helpers.formatStockMoney(item["Close/Last"]);
+      item.Volume = parseInt(item.Volume);
+      item.Open = helpers.formatStockMoney(item.Open);
+      item.High = helpers.formatStockMoney(item.High);
+      item.Low = helpers.formatStockMoney(item.Low);
+    });
+    obj.sort((a, b) => {
+      return a.Date - b.Date;
+    });
+    if (!dates.custom) {
+      dates.first = obj[mode].Date;
+      dates.last = obj[obj.length - 2].Date;
+    }
+    if (
+      dates.first.getTime() < obj[0].Date.getTime() ||
+      dates.last.getTime() > obj[obj.length - 1].Date.getTime()
+    ) {
+      throw new Error("Dates don't match");
+    }
+    // Find array objects within range
+    for (let i = 0; i < obj.length; i++) {
+      if (obj[i].Date.getTime() === dates.first.getTime()) {
+        for (let j = mode; j >= 0; j--) {
+          chosenEntries.push(obj[i - j]);
+          // console.log(`added to arhay ${obj[i - j].Date.toDateString()}`);
+        }
+      } else if (
+        obj[i].Date.getTime() >= dates.first.getTime() &&
+        obj[i].Date.getTime() < dates.last.getTime()
+      ) {
+        chosenEntries.push(obj[i]);
+        // console.log(`added to arhay ${obj[i].Date.toDateString()}`);
+      }
+      if (obj[i].Date.getTime() === dates.last.getTime()) {
+        chosenEntries.push(obj[i]);
+        // console.log(`added to arhay ${obj[i].Date.toDateString()}`);
+        // If mode is 1 (searching for trends), lets add one more
+        if (mode === 1) {
+          chosenEntries.push(obj[i + 1]);
+          // console.log(`added to arhay ${obj[i + 1].Date.toDateString()}`);
+        }
+      }
+    }
+    return chosenEntries;
   },
 };
 
