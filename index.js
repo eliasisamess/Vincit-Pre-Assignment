@@ -8,11 +8,11 @@ async function analyzeStocks(data, mode, dates) {
     selected = finders.entriesByDate(data, mode, dates);
 
     if (mode == 1) {
-      await finders.longestTrends(selected);
+      await finders.longestTrends(selected, dates);
     } else if (mode == 0) {
-      await finders.volumesAndPriceChanges(selected);
+      await finders.volumesAndPriceChanges(selected, dates);
     } else if (mode == 5) {
-      await finders.bestSMA5(selected);
+      await finders.bestSMA5(selected, dates);
     } else {
       console.log("no mode or wrong mode selected");
     }
@@ -29,7 +29,7 @@ async function main() {
   let data = [];
   let mode;
   let dates = { custom: false, first: {}, last: {} };
-  path = "HistoricalQuotes.csv";
+  path = "HistoricalQuotes-2.csv";
   console.log("Welcome to MVP stock analysist");
 
   while (stillAnalyzing) {
