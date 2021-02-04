@@ -13,17 +13,17 @@ const helpers = {
   },
   countPercentageDifference: (a, b) => {
     let result = (a / b) * 100 - 100;
-    console.log(
-      `Counting percentage difference between ${a} and ${b} which is ${result}`
-    );
+    // console.log(
+    //   `Counting percentage difference between ${a} and ${b} which is ${result}`
+    // );
     return result.toFixed(5);
   },
   countSimpleMovingAverage: (array) => {
-    console.log(`Counting simple moving average now`);
+    // console.log(`Counting simple moving average now`);
     let sum = 0;
     array.forEach((item) => {
       sum = parseFloat(sum) + parseFloat(item);
-      console.log(`item is now ${item} and sum is ${sum}`);
+      // console.log(`item is now ${item} and sum is ${sum}`);
     });
     let result = sum / array.length;
     return result.toFixed(5);
@@ -83,31 +83,31 @@ const helpers = {
 const finders = {
   async bestSMA5(data, start, end, mode) {
     let array = await helpers.entriesByDate(data, start, end, mode);
-    console.log("Finding best sma5");
+    // console.log("Finding best sma5");
     let listOfResults = [];
     let startingIndex = 5;
     for (let i = startingIndex; i < array.length; i++) {
       let current;
-      console.log(
-        `Today is ${array[i].Date.toDateString()} and opening price is ${
-          array[i].Open
-        }`
-      );
+      // console.log(
+      //   `Today is ${array[i].Date.toDateString()} and opening price is ${
+      //     array[i].Open
+      //   }`
+      // );
       let tempArray = [];
       for (let j = 5; j > 0; j--) {
         tempArray.push(array[i - j].Open);
-        console.log(
-          `Pushed ${array[i - j].Date.toDateString()} (${
-            array[i - j].Open
-          }) to tempArray`
-        );
+        // console.log(
+        //   `Pushed ${array[i - j].Date.toDateString()} (${
+        //     array[i - j].Open
+        //   }) to tempArray`
+        // );
       }
       current = helpers.countSimpleMovingAverage(tempArray);
-      console.log(
-        `Day is ${array[i].Date.toDateString()} open is ${
-          array[i].Open
-        } and SMA5 is ${current}`
-      );
+      // console.log(
+      //   `Day is ${array[i].Date.toDateString()} open is ${
+      //     array[i].Open
+      //   } and SMA5 is ${current}`
+      // );
       listOfResults.push({
         Date: array[i].Date,
         Open: array[i].Open,

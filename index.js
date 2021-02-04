@@ -19,17 +19,23 @@ async function main() {
   }
 }
 
-let firstDay = new Date("01/01/2013");
-let lastDay = new Date("01/01/2020");
-
+let firstDay;
+let lastDay;
 // A = 1
 // B = 0
 // C = 5
 let mode;
-if (process.argv.length > 2) {
-  mode = parseInt(process.argv[2]);
+let path;
+if (process.argv.length > 4) {
+  path = process.argv[2];
+  mode = parseInt(process.argv[3]);
+  firstDay = new Date(process.argv[4]);
+  lastDay = new Date(process.argv[5]);
 } else {
+  path = "HistoricalQuotes.csv";
   mode = 0;
+  firstDay = new Date("01/01/2013");
+  lastDay = new Date("01/01/2020");
 }
 // console.log(process.ar);
 
@@ -37,7 +43,5 @@ console.log("Welcome to MVP stock analysist");
 console.log(
   `Date range is ${firstDay.toDateString()} and ${lastDay.toDateString()}`
 );
-const path = "HistoricalQuotes.csv";
-console.log("using " + path);
 
 main();
