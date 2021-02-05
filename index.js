@@ -7,7 +7,7 @@ import {
   entriesByDate,
 } from "./finders.js";
 
-function analyzeStocks(data, mode, dates) {
+function analyzeStockData(data, mode, dates) {
   let selected = [];
   selected = entriesByDate(data, mode, dates);
   if (mode == 1) {
@@ -19,40 +19,41 @@ function analyzeStocks(data, mode, dates) {
   }
 }
 
-let path;
-let stillAnalyzing = true;
-let startOver = true;
 let data;
 let mode;
+let path;
+let fileFirstEntry;
+let fileLastEntry;
 let dates = { custom: null, first: {}, last: {} };
-path = "Test.csv";
-console.log("Welcome to MVP stock analysist");
-let fileFirst;
-let fileLast;
 let sameDates = false;
+let startOver = true;
+let stillAnalyzing = true;
+
+path = "HistoricalQuotes.csv";
+console.log("Welcome to your personal stock analysist Mr. McDuck!");
 while (stillAnalyzing) {
   if (startOver) {
-    console.log("now choosing file");
-    // (path = readlineSync.question(
-    //   "Please provide the name of a csv file (located in this folder): "
-    // )),
-    console.log("selected file " + path);
-    data = await csv().fromFile(path);
-    fileFirst = new Date(data[0].Date);
-    fileLast = new Date(data[data.length - 1].Date);
-    console.log(
-      `File read succesfully. Date range of entries is ${
-        fileFirst.getTime() < fileLast.getTime()
-          ? fileFirst.toDateString()
-          : fileLast.toDateString()
-      } - ${
-        fileFirst.getTime() < fileLast.getTime()
-          ? fileLast.toDateString()
-          : fileFirst.toDateString()
-      }`
+    // console.log("now choosing file");
+    path = readlineSync.question(
+      "Please provide the name of a csv file to import data from: "
     );
+    // console.log("selected file " + path);
+    data = await csv().fromFile(path);
+    fileFirstEntry = new Date(data[0].Date);
+    fileLastEntry = new Date(data[data.length - 1].Date);
   }
   if (!sameDates) {
+    console.log(
+      `Date range of stock entries in file "${path}" is ${
+        fileFirstEntry.getTime() < fileLastEntry.getTime()
+          ? fileFirstEntry.toDateString()
+          : fileLastEntry.toDateString()
+      } - ${
+        fileFirstEntry.getTime() < fileLastEntry.getTime()
+          ? fileLastEntry.toDateString()
+          : fileFirstEntry.toDateString()
+      }`
+    );
     if (
       readlineSync.keyInYN(
         "Do you want to provide a custom date range within the data?"
@@ -68,14 +69,18 @@ while (stillAnalyzing) {
     } else {
       dates.custom = false;
       dates.first =
-        fileFirst.getTime() < fileLast.getTime() ? fileFirst : fileLast;
+        fileFirstEntry.getTime() < fileLastEntry.getTime()
+          ? fileFirstEntry
+          : fileLastEntry;
       dates.last =
-        fileLast.getTime() > fileFirst.getTime() ? fileLast : fileFirst;
+        fileLastEntry.getTime() > fileFirstEntry.getTime()
+          ? fileLastEntry
+          : fileFirstEntry;
     }
   }
-  console.log("Analyzing " + path);
-  console.log(`first date set to ${dates.first.toDateString()}`);
-  console.log(`last date set to ${dates.last.toDateString()}`);
+  console.log(
+    `Ready to analyze "${path}" with a date range of ${dates.first.toDateString()} - ${dates.last.toDateString()}`
+  );
   let modes = [
       "Find bullish (upward) trends",
       "Find highest trading volumes and most significant price changes within a day",
@@ -85,7 +90,7 @@ while (stillAnalyzing) {
       modes,
       "In which mode do you want to analyze this data?"
     );
-  console.log(`Ok, mode ${index + 1} selected`);
+  // console.log(`Ok, mode ${index + 1} selected`);
   // According to user's selection, mode is set to 1, 0 or 5. This number means how many
   // entries we need to pick from the data before the starting day, so it works properly
   // on each main function.
@@ -99,8 +104,7 @@ while (stillAnalyzing) {
     console.log("Okay, bye bye.");
     process.exit();
   }
-
-  analyzeStocks(data, mode, dates);
+  analyzeStockData(data, mode, dates);
   if (
     readlineSync.keyInYN(
       `Do you want to continue analyzing this file "${path}"?`
@@ -108,7 +112,7 @@ while (stillAnalyzing) {
   ) {
     // 'Y' key was pressed.
     startOver = false;
-    if (readlineSync.keyInYN(`Keep the same daterange?`)) {
+    if (readlineSync.keyInYN(`Keep the same date range?`)) {
       sameDates = true;
     } else {
       sameDates = false;
