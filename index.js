@@ -19,22 +19,17 @@ function analyzeStocks(data, mode, dates) {
   }
 }
 
-// async function readFileToJson(file) {
-//   let entries = await csv().fromFile(file);
-//   n;
-//   return entries;
-// }
-
 let path;
 let stillAnalyzing = true;
 let startOver = true;
 let data;
 let mode;
-let dates = { custom: false, first: {}, last: {} };
-path = "HistoricalQuotes.csv";
+let dates = { custom: null, first: {}, last: {} };
+path = "Test.csv";
 console.log("Welcome to MVP stock analysist");
 let fileFirst;
 let fileLast;
+let sameDates = false;
 while (stillAnalyzing) {
   if (startOver) {
     console.log("now choosing file");
@@ -43,11 +38,8 @@ while (stillAnalyzing) {
     // )),
     console.log("selected file " + path);
     data = await csv().fromFile(path);
-    // data.forEach((item) => console.log(item));
-
     fileFirst = new Date(data[0].Date);
     fileLast = new Date(data[data.length - 1].Date);
-
     console.log(
       `File read succesfully. Date range of entries is ${
         fileFirst.getTime() < fileLast.getTime()
@@ -60,27 +52,30 @@ while (stillAnalyzing) {
       }`
     );
   }
-  if (
-    readlineSync.keyInYN(
-      "Do you want to provide a custom date range within the data?"
-    )
-  ) {
-    dates.custom = true;
-    (dates.first = new Date(
-      readlineSync.question(`Provide a starting day (m/d/y): `)
-    )),
-      (dates.last = new Date(
-        readlineSync.question(`Provide an ending day (m/d/y): `)
-      ));
-  } else {
-    dates.custom = false;
-    dates.first =
-      fileFirst.getTime() < fileLast.getTime() ? fileFirst : fileLast;
-    dates.last =
-      fileLast.getTime() > fileFirst.getTime() ? fileLast : fileFirst;
+  if (!sameDates) {
+    if (
+      readlineSync.keyInYN(
+        "Do you want to provide a custom date range within the data?"
+      )
+    ) {
+      dates.custom = true;
+      (dates.first = new Date(
+        readlineSync.question(`Provide a starting day (m/d/y): `)
+      )),
+        (dates.last = new Date(
+          readlineSync.question(`Provide an ending day (m/d/y): `)
+        ));
+    } else {
+      dates.custom = false;
+      dates.first =
+        fileFirst.getTime() < fileLast.getTime() ? fileFirst : fileLast;
+      dates.last =
+        fileLast.getTime() > fileFirst.getTime() ? fileLast : fileFirst;
+    }
   }
-  console.log(`first is ${dates.first.toDateString()}`);
-  console.log(`last is ${dates.last.toDateString()}`);
+  console.log("Analyzing " + path);
+  console.log(`first date set to ${dates.first.toDateString()}`);
+  console.log(`last date set to ${dates.last.toDateString()}`);
   let modes = [
       "Find bullish (upward) trends",
       "Find highest trading volumes and most significant price changes within a day",
@@ -100,11 +95,12 @@ while (stillAnalyzing) {
     mode = 0;
   } else if (index === 2) {
     mode = 5;
+  } else {
+    console.log("Okay, bye bye.");
+    process.exit();
   }
-  console.log(`selected mode is ${mode}`);
-  console.log(`now going to anal`);
-  analyzeStocks(data, mode, dates);
 
+  analyzeStocks(data, mode, dates);
   if (
     readlineSync.keyInYN(
       `Do you want to continue analyzing this file "${path}"?`
@@ -112,15 +108,18 @@ while (stillAnalyzing) {
   ) {
     // 'Y' key was pressed.
     startOver = false;
-    console.log("Okay, lets start again.");
-    // Do something...
+    if (readlineSync.keyInYN(`Keep the same daterange?`)) {
+      sameDates = true;
+    } else {
+      sameDates = false;
+    }
   } else {
     // Another key was pressed.
     if (readlineSync.keyInYN(`Do you want to continue with another file?`)) {
       // 'Y' key was pressed.
+      sameDates = false;
       startOver = true;
       stillAnalyzing = true;
-      // Do something...
     } else {
       startOver = false;
       stillAnalyzing = false;
