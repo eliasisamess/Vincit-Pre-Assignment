@@ -1,2 +1,2 @@
 # Vincit-Pre-Assignment
-A console stock analysis application for Scrooge McDuck. Pre-assignment for a job application to Vincit.
+A console stock analysist for Scrooge McDuck. Pre-assignment for a job application to Vincit.
