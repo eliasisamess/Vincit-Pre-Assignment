@@ -22,10 +22,28 @@ const countSimpleMovingAverage = (array) => {
   let result = sum / array.length;
   return result.toFixed(5);
 };
+const checkDates = (array, mode, dates) => {
+  let indexArray = [];
+  console.log(`checking dates now`);
+
+  if (dates.custom) {
+    console.log("custom dates selected, finding indexes");
+    indexArray.push(
+      array.findIndex((item) => item.Date.getTime() >= dates.first.getTime())
+    );
+    indexArray.push(
+      array.findIndex((item) => item.Date.getTime() > dates.last.getTime()) - 1
+    );
+  } else {
+    indexArray = [mode, array.length - 1];
+  }
+  return indexArray;
+};
 
 export {
   formatStockMoney,
   countDifference,
   countPercentageDifference,
   countSimpleMovingAverage,
+  checkDates,
 };

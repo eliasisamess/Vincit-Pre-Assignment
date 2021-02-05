@@ -3,6 +3,7 @@ import {
   countPercentageDifference,
   countSimpleMovingAverage,
   formatStockMoney,
+  checkDates,
 } from "./helpers.js";
 
 // These functions are the core features to analyze stock market data and find entries by date range
@@ -69,56 +70,127 @@ const longestTrends = (array, dates) => {
     others: [],
   };
   let trendCounter = 0;
+  const firstDay = array[1].Date.getTime();
+  const lastDay = array[array.length - 1].Date.getTime();
+
   for (let i = 1; i < array.length; i++) {
-    if (dates.first.getTime() <= array[i].Date.getTime()) {
-      let closeToday = array[i].Close;
-      let closeYesterday = array[i - 1].Close;
-      if (closeToday > closeYesterday) {
+    let closeToday = array[i].Close;
+    let closeYesterday = array[i - 1].Close;
+    let today = array[i].Date.getTime();
+    let yesterday = array[i - 1].Date.getTime();
+    // console.log(`Round ${i} ${array[i].Date.toDateString()}`);
+
+    if (today != lastDay && closeToday > closeYesterday) {
+      // console.log(
+      //   `Today ${array[
+      //     i
+      //   ].Date.toDateString()} close ${closeToday} vs ${closeYesterday} (${array[
+      //     i - 1
+      //   ].Date.toDateString()})`
+      // );
+      if (trendCounter === 0) {
+        console.log(`New trend has started on ${array[i].Date.toDateString()}`);
+      }
+      trendCounter++;
+      console.log(`trendCounter is ${trendCounter}`);
+    } else if (today != lastDay && closeToday <= closeYesterday) {
+      if (trendCounter < 0) {
+        console.log("trend ended at " + trendCounter + " days ");
+      }
+      console.log("closing today is lower or same");
+      // If the ended trend was longer than current longest, we set a new first
+      // and clear the others (since they've been shorter, if set already)
+      if (trends.firstLength < trendCounter && trends.firstLength > 0) {
+        trends.firstLength = trendCounter;
+        console.log(`New longest trend set to ${trends.firstLength}.`);
+        trends.firstStartingDay = array[i - trendCounter].Date;
+        trends.firstEndingDay = array[i - 1].Date;
         console.log(
-          `today is ${array[i].Date.toDateString()} close ${
-            array[i].Close
-          } vs ${array[i - 1].Close} (${array[i - 1].Date.toDateString()})`
+          `First longest trend range set to ${trends.firstStartingDay} - ${trends.firstEndingDay}.`
         );
-        if (trendCounter === 0) {
-          console.log(
-            `New trend has started on ${array[i - 1].Date.toDateString()}`
-          );
-        }
-        trendCounter++;
-        console.log(`trendCounter is ${trendCounter}`);
-      } else if (closeToday <= closeYesterday) {
-        console.log("closing today is lower or similar");
-        // If the ended trend was longer than current longest, we set a new first
-        // and clear the others (since they've been shorter, if set already)
-        if (trends.firstLength < trendCounter) {
-          trends.firstLength = trendCounter;
-          console.log(`First longest trend set to ${trends.firstLength}.`);
-          trends.firstStartingDay = array[i - trendCounter].Date;
-          trends.firstEndingDay = array[i - 1].Date;
-          console.log(
-            `First longest trend range set to ${trends.firstStartingDay} - ${trends.firstEndingDay}.`
-          );
-          trends.others = [];
-          console.log("Cleared the others because new longest trend was set.");
-          // If the ended trend was as long as the first longest, we add current
-          // trend to others[] array.
-        } else if (
-          trends.firstLength === trendCounter &&
-          trends.firstLength > 0
-        ) {
-          trends.others.push({
-            trendLength: trendCounter,
-            startingDay: array[i - trendCounter].Date,
-            endingDay: array[i - 1].Date,
-          });
-          console.log(
-            `Found trend as long (${trendCounter}) as the current longest (${longestTrends.firstLength}) and added it to others[]`
-          );
-        }
+        trends.others = [];
+        console.log("Cleared the others because new longest trend was set.");
+        // If the ended trend was as long as the first longest, we add current
+        // trend to others[] array.
+      } else if (trends.firstLength === trendCounter && trendCounter > 0) {
+        trends.others.push({
+          trendLength: trendCounter,
+          startingDay: array[i - trendCounter].Date,
+          endingDay: array[i - 1].Date,
+        });
+        console.log(
+          `Found trend as long (${trendCounter}) as the current longest (${trends.firstLength}) and added it to others[]`
+        );
       }
       // If current trend ended, clear it before next round
       trendCounter = 0;
+      // If last round and still rising
+    } else if (today === lastDay && closeToday > closeYesterday) {
+      console.log(
+        "today is lasta day and pistietä perklele " +
+          array[i].Date.toDateString()
+      );
+      trendCounter++;
+      console.log(`trendcounter ${trendCounter}`);
+      if (trends.firstLength < trendCounter) {
+        trends.firstLength = trendCounter;
+        console.log(`First longest trend set to ${trends.firstLength}.`);
+        trends.firstStartingDay = array[i - trendCounter].Date;
+        trends.firstEndingDay = array[i].Date;
+        console.log(
+          `First longest trend range set to ${trends.firstStartingDay} - ${trends.firstEndingDay}.`
+        );
+        trends.others = [];
+        console.log("Cleared the others because new longest trend was set.");
+        // If the ended trend was as long as the first longest, we add current
+        // trend to others[] array.
+      } else if (
+        trends.firstLength === trendCounter &&
+        trends.firstLength > 0
+      ) {
+        trends.others.push({
+          trendLength: trendCounter,
+          startingDay: array[i - trendCounter].Date,
+          endingDay: array[i].Date,
+        });
+        console.log(
+          `Found trend as long (${trendCounter}) as the current longest (${trends.firstLength}) and added it to others[]`
+        );
+      }
     }
+  }
+
+  console.log("finished looking for trends");
+  if (trends.firstLength === 0) {
+    console.log("during given timerange, there were no upwards trends");
+  } else if (trends.firstLength === 1) {
+    console.log(
+      `During given timerange the longest trend was ${
+        trends.firstLength + 1
+      } days and there were ${trends.others.length} other similar trends:`
+    );
+    console.log(
+      `${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}`
+    );
+    trends.others.forEach((item) =>
+      console.log(
+        `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
+      )
+    );
+  } else {
+    console.log(
+      `During given timerange the longest trend was ${
+        trends.firstLength + 1
+      } days and there were ${trends.others.length} other similar trends:`
+    );
+    console.log(
+      `${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}`
+    );
+    trends.others.forEach((item) =>
+      console.log(
+        `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
+      )
+    );
   }
 };
 
@@ -216,7 +288,9 @@ const oldlongestTrends = (array, dates) => {
   ////
   ////
   console.log(
-    `Finished looking for trends. During given timerange the longest trend was ${longestTrends.firstLength} days and there were ${longestTrends.others.length} other similar trends:`
+    `Finished looking for trends. During given timerange the longest trend was ${
+      longestTrends.firstLength + 1
+    } days and there were ${longestTrends.others.length} other similar trends:`
   );
   console.log(
     `${longestTrends.firstStartingDay.toDateString()} - ${longestTrends.firstEndingDay.toDateString()}`
@@ -258,6 +332,9 @@ const volumesAndPriceChanges = (array) => {
 // Read csv file to json
 const entriesByDate = (array, mode, dates) => {
   console.log("looking for entriesByDate");
+  console.log(
+    `user ${dates.first.toDateString()} - ${dates.last.toDateString()}`
+  );
   let chosenEntries = [];
   let temp = [];
   // Format each entry to date objects, integers and floats
@@ -274,26 +351,29 @@ const entriesByDate = (array, mode, dates) => {
   temp.sort((a, b) => {
     return a.Date - b.Date;
   });
-
-  let addExtras = false;
-  if (mode != 0) {
-    addExtras = true;
-    let firstIndex = temp.findIndex(
-      (a) => a.Date.getTime() === dates.first.getTime()
-    );
-    console.log(firstIndex);
-    dates.first = temp[firstIndex].Date;
-  }
+  let addExtras = mode != 0 ? true : false;
+  let days = checkDates(temp, mode, dates);
+  let firstDay = days[0];
+  let lastDay = temp[days[1]].Date;
+  console.log(
+    `!!! machine set firstDayindex ${temp[
+      firstDay
+    ].Date.toDateString()}, last ${lastDay.toDateString()}`
+  );
   console.log("!!!! dates customise is " + dates.custom);
-  console.log("!!!! dates first is " + dates.first.toDateString());
-  console.log("!!!! dates last is " + dates.last.toDateString());
-
-  console.log(addExtras + " add texteareh and mode " + mode);
-  for (let i = mode; i < temp.length; i++) {
-    if (addExtras && temp[i].Date.getTime() === dates.first.getTime()) {
+  if (dates.custom) {
+    console.log("!!!! custom dates first is " + dates.first.toDateString());
+    console.log("!!!! custome dates last is " + dates.last.toDateString());
+  }
+  if (addExtras) {
+    console.log("adding extras, mode is " + mode);
+  }
+  for (let i = firstDay; i < temp.length; i++) {
+    console.log(`round ${i}`);
+    if (addExtras && i === firstDay) {
       for (let j = mode; j >= 0; j--) {
         chosenEntries.push(temp[i - j]);
-        console.log(`pushed ${temp[i - j].Date}`);
+        console.log(`pushed ${temp[i - j].Date.toDateString()}`);
         console.log(
           `add extras so added pre's and first ${temp[
             i - j
@@ -314,11 +394,6 @@ const entriesByDate = (array, mode, dates) => {
     } else if (temp[i].Date.getTime() === dates.last.getTime()) {
       chosenEntries.push(temp[i]);
       console.log(`added last ${temp[i].Date.toDateString()}`);
-      // If mode is 1 (searching for trends), lets add one more
-      // if (mode === 1) {
-      //   chosenEntries.push(obj[i + 1]);
-      //   console.log(`added extra ${obj[i + 1].Date.toDateString()}`);
-      // }
     }
   }
   return chosenEntries;
