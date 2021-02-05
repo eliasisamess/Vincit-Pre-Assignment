@@ -1,2 +1,2 @@
 # Vincit-Pre-Assignment
-MVP Stock Market Analysis for Scrooge McDuck
+A console stock analysis application for Scrooge McDuck. Pre-assignment for a job application to Vincit.
