@@ -1,7 +1,7 @@
 import readlineSync from "readline-sync";
 import csv from "csvtojson";
 import { longestTrends, volumesAndPriceChanges, bestSMA5 } from "./finders.js";
-import { entriesByDate, formatDataArray } from "./helpers.js";
+import { entriesByDate, formatDataArray, validateDates } from "./helpers.js";
 
 const analyzeStockData = (selected, mode, dates) => {
   if (mode == 1) {
@@ -21,10 +21,32 @@ let fileLastEntry;
 let firstTime = true;
 let dates = {
   custom: null,
-  first: {},
-  last: {},
-  firstIndex: -1,
-  lastIndex: -1,
+  base: {
+    first: {},
+    last: {},
+    firstIndex: -1,
+    lastIndex: -1,
+  },
+  modes: [
+    {
+      first: {},
+      last: {},
+      firstIndex: -1,
+      lastIndex: -1,
+    },
+    {
+      first: {},
+      last: {},
+      firstIndex: -1,
+      lastIndex: -1,
+    },
+    {
+      first: {},
+      last: {},
+      firstIndex: -1,
+      lastIndex: -1,
+    },
+  ],
 };
 let sameDates = false;
 let startOver = true;
@@ -75,17 +97,16 @@ while (stillAnalyzing) {
     console.log("Okay, bye bye.");
     process.exit();
   }
-  if (
-    !firstTime &&
-    readlineSync.keyInYN(
-      `Keep the same date range as before? (${dates.first.toDateString()} - ${dates.last.toDateString()})`
-    )
-  ) {
-    sameDates = true;
-  } else {
-    sameDates = false;
-  }
-
+  // if (
+  //   !firstTime &&
+  //   readlineSync.keyInYN(
+  //     `Keep the same date range as before? (${dates.first.toDateString()} - ${dates.last.toDateString()})`
+  //   )
+  // ) {
+  //   sameDates = true;
+  // } else {
+  //   sameDates = false;
+  // }
   try {
     if (!sameDates) {
       if (
@@ -94,10 +115,10 @@ while (stillAnalyzing) {
         )
       ) {
         dates.custom = true;
-        (dates.first = new Date(
+        (dates.base.first = new Date(
           readlineSync.question(`Provide a starting day (m/d/y): `)
         )),
-          (dates.last = new Date(
+          (dates.base.last = new Date(
             readlineSync.question(`Provide an ending day (m/d/y): `)
           ));
       } else {
@@ -105,10 +126,11 @@ while (stillAnalyzing) {
           "setting uncustom " + fileFirstEntry + " and " + fileLastEntry
         );
         dates.custom = false;
-        dates.first = fileFirstEntry;
-        dates.last = fileLastEntry;
+        dates.base.first = fileFirstEntry;
+        dates.base.last = fileLastEntry;
       }
     }
+    dates = validateDates(data, mode, dates, index);
     let selected = entriesByDate(data, mode, dates);
     analyzeStockData(selected, mode, dates);
   } catch (err) {
