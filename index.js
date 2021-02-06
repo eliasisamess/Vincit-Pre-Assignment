@@ -1,17 +1,7 @@
 import readlineSync from "readline-sync";
 import csv from "csvtojson";
-import { longestTrends, volumesAndPriceChanges, bestSMA5 } from "./finders.js";
+import { analyzeStockData } from "./finders.js";
 import { entriesByDate, formatDataArray, validateDates } from "./helpers.js";
-
-const analyzeStockData = (selected, mode, dates) => {
-  if (mode == 1) {
-    longestTrends(selected, dates);
-  } else if (mode == 0) {
-    volumesAndPriceChanges(selected, dates);
-  } else if (mode == 5) {
-    bestSMA5(selected, dates);
-  }
-};
 
 let data;
 let mode;
@@ -97,16 +87,6 @@ while (stillAnalyzing) {
     console.log("Okay, bye bye.");
     process.exit();
   }
-  // if (
-  //   !firstTime &&
-  //   readlineSync.keyInYN(
-  //     `Keep the same date range as before? (${dates.first.toDateString()} - ${dates.last.toDateString()})`
-  //   )
-  // ) {
-  //   sameDates = true;
-  // } else {
-  //   sameDates = false;
-  // }
   try {
     if (!sameDates) {
       if (
@@ -145,6 +125,16 @@ while (stillAnalyzing) {
       // 'Y' key was pressed.
       startOver = false;
       firstTime = false;
+      if (
+        dates.custom &&
+        readlineSync.keyInYN(
+          `Keep the same date range as before? (${dates.base.first.toDateString()} - ${dates.base.last.toDateString()})`
+        )
+      ) {
+        sameDates = true;
+      } else {
+        sameDates = false;
+      }
     } else {
       // Another key was pressed.
       if (readlineSync.keyInYN(`Do you want to continue with another file?`)) {

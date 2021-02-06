@@ -4,6 +4,16 @@ import {
   countSimpleMovingAverage,
 } from "./helpers.js";
 
+const analyzeStockData = (selected, mode, dates) => {
+  if (mode == 1) {
+    longestTrends(selected, dates);
+  } else if (mode == 0) {
+    volumesAndPriceChanges(selected, dates);
+  } else if (mode == 5) {
+    bestSMA5(selected, dates);
+  }
+};
+
 // BEST SMA5
 // Calculates simple moving average for day N using the average value of closing prices between days N-1 to N-5.
 // Calculates how many percentages (%) is the difference between the opening price of the day and the calculated SMA 5 price of the day.
@@ -100,14 +110,14 @@ const longestTrends = (array) => {
     // and clear the others (since they've been shorter, if set already)
     if (trends.firstLength < trendCounter) {
       trends.firstLength = trendCounter;
-      // console.log(`WOOHOOO!New longest trend set to ${trends.firstLength}.`);
-      trends.firstStartingDay = array[i - trendCounter + 1].Date;
+      console.log(`WOOHOOO!New longest trend set to ${trends.firstLength}.`);
+      trends.firstStartingDay = array[i - trendCounter].Date;
       trends.firstEndingDay = today.Date;
-      // console.log(
-      //   `FIRST LONGEST TREND range set to ${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}.`
-      // );
+      console.log(
+        `FIRST LONGEST TREND range set to ${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}.`
+      );
       trends.others = [];
-      // console.log("Cleared the others because new longest trend was set.");
+      console.log("Cleared the others because new longest trend was set.");
       // If the ended trend was as long as the first longest, we add current
       // trend to others[] array.
     } else if (trends.firstLength === trendCounter) {
@@ -116,14 +126,16 @@ const longestTrends = (array) => {
         startingDay: array[i - trendCounter].Date,
         endingDay: today.Date,
       });
-      // console.log(
-      //   `Found trend as long (${trendCounter}) as the current longest (${trends.firstLength}) and added it to others[]`
-      // );
+      console.log(
+        `Found trend as long (${trendCounter}) as the current longest (${trends.firstLength}) and added it to others[]`
+      );
     }
   }
   console.log("Finished analyzing trends.");
   console.log(
-    `During given timerange the longest upwards trend was ${trends.firstLength} days and there were ${trends.others.length} other similar trends:`
+    `During given timerange the longest upwards trend was ${
+      trends.firstLength + 1
+    } days and there were ${trends.others.length} other similar trends:`
   );
   console.log(
     `${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}`
@@ -159,4 +171,4 @@ const volumesAndPriceChanges = (array) => {
   // return newArray;
 };
 
-export { bestSMA5, longestTrends, volumesAndPriceChanges };
+export { analyzeStockData };
