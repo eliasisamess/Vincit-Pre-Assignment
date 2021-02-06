@@ -1,9 +1,7 @@
 import {
-  checkDates,
   countDifference,
   countPercentageDifference,
   countSimpleMovingAverage,
-  formatStockMoney,
 } from "./helpers.js";
 
 // BEST SMA5
@@ -59,79 +57,6 @@ const bestSMA5 = (array) => {
   //     array.length - 1
   //   ].Date.toDateString()}`
   // );
-};
-
-// ENTRIES BY DATE
-// Returns all entries from object between given date range and also dates
-// before the starting day, if needed, according to mode settings
-const entriesByDate = (array, mode, dates) => {
-  // console.log("looking for entriesByDate");
-  // console.log(
-  //   `user ${dates.first.toDateString()} - ${dates.last.toDateString()}`
-  // );
-  let chosenEntries = [];
-  let temp = [];
-  // Format each entry to date objects, integers and floats
-  array.forEach((item) => {
-    temp.push({
-      Date: new Date(item.Date),
-      Close: formatStockMoney(item["Close/Last"]),
-      Volume: parseInt(item.Volume),
-      Open: formatStockMoney(item.Open),
-      High: formatStockMoney(item.High),
-      Low: formatStockMoney(item.Low),
-    });
-  });
-  temp.sort((a, b) => {
-    return a.Date - b.Date;
-  });
-  let addExtras = mode != 0 ? true : false;
-  let days = checkDates(temp, mode, dates);
-  let firstDayIndex = days[0];
-  let lastDayIndex = days[1];
-  dates.first = temp[firstDayIndex].Date;
-  dates.last = temp[lastDayIndex].Date;
-  // console.log(
-  //   `!!! machine set firstDayindex ${temp[
-  //     firstDayIndex
-  //   ].Date.toDateString()}, last ${temp[lastDayIndex].Date.toDateString()}`
-  // );
-  // console.log("custom dates? " + dates.custom);
-  // console.log("checked custom first is " + dates.first.toDateString());
-  // console.log("checked custom last is " + dates.last.toDateString());
-
-  // if (addExtras) {
-  //   console.log("adding extras, mode is " + mode);
-  // }
-  for (let i = firstDayIndex; i < lastDayIndex + 1; i++) {
-    // console.log(`round ${i}`);
-    if (addExtras && i === firstDayIndex) {
-      for (let j = mode; j >= 0; j--) {
-        chosenEntries.push(temp[i - j]);
-        // console.log(`pushed ${temp[i - j].Date.toDateString()}`);
-        // console.log(
-        //   `add extras so added pre's and first ${temp[
-        //     i - j
-        //   ].Date.toDateString()}`
-        // );
-      }
-    } else if (!addExtras && temp[i].Date.getTime() === dates.first.getTime()) {
-      chosenEntries.push(temp[i]);
-      // console.log(
-      //   `dont add extras so pushed first ${temp[i].Date.toDateString()}`
-      // );
-    } else if (
-      temp[i].Date.getTime() > dates.first.getTime() &&
-      temp[i].Date.getTime() < dates.last.getTime()
-    ) {
-      chosenEntries.push(temp[i]);
-      // console.log(`added days between ${temp[i].Date.toDateString()}`);
-    } else if (temp[i].Date.getTime() === dates.last.getTime()) {
-      chosenEntries.push(temp[i]);
-      // console.log(`added last ${temp[i].Date.toDateString()}`);
-    }
-  }
-  return chosenEntries;
 };
 
 // LONGEST TRENDS
@@ -234,4 +159,4 @@ const volumesAndPriceChanges = (array) => {
   // return newArray;
 };
 
-export { bestSMA5, entriesByDate, longestTrends, volumesAndPriceChanges };
+export { bestSMA5, longestTrends, volumesAndPriceChanges };
