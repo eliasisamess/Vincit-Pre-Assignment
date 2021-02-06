@@ -63,7 +63,7 @@ const bestSMA5 = (array) => {
     )
   );
   // console.log(
-  //   `done searcging ${array[0].Date.toDateString()} - ${array[
+  //   `done searching ${array[0].Date.toDateString()} - ${array[
   //     array.length - 1
   //   ].Date.toDateString()}`
   // );
@@ -110,14 +110,14 @@ const longestTrends = (array) => {
     // and clear the others (since they've been shorter, if set already)
     if (trends.firstLength < trendCounter) {
       trends.firstLength = trendCounter;
-      console.log(`WOOHOOO!New longest trend set to ${trends.firstLength}.`);
+      // console.log(`WOOHOOO!New longest trend set to ${trends.firstLength}.`);
       trends.firstStartingDay = array[i - trendCounter].Date;
       trends.firstEndingDay = today.Date;
-      console.log(
-        `FIRST LONGEST TREND range set to ${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}.`
-      );
+      // console.log(
+      //   `FIRST LONGEST TREND range set to ${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}.`
+      // );
       trends.others = [];
-      console.log("Cleared the others because new longest trend was set.");
+      // console.log("Cleared the others because new longest trend was set.");
       // If the ended trend was as long as the first longest, we add current
       // trend to others[] array.
     } else if (trends.firstLength === trendCounter) {
@@ -126,12 +126,12 @@ const longestTrends = (array) => {
         startingDay: array[i - trendCounter].Date,
         endingDay: today.Date,
       });
-      console.log(
-        `Found trend as long (${trendCounter}) as the current longest (${trends.firstLength}) and added it to others[]`
-      );
+      // console.log(
+      //   `Found trend as long (${trendCounter}) as the current longest (${trends.firstLength}) and added it to others[]`
+      // );
     }
   }
-  console.log("Finished analyzing trends.");
+  // console.log("Finished analyzing trends.");
   console.log(
     `During given timerange the longest upwards trend was ${
       trends.firstLength + 1
@@ -163,7 +163,7 @@ const volumesAndPriceChanges = (array) => {
   });
   newArray.forEach((item) =>
     console.log(
-      `DATE: ${item.Date.toDateString()} VOLUME: ${item.Volume} CHANGE: ${
+      `DATE: ${item.Date.toDateString()} VOLUME: ${item.Volume} CHANGE: $${
         item.Change
       }`
     )
