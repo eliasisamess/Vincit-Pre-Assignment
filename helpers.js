@@ -4,22 +4,27 @@
 
 function InvalidDatesException(message) {
   this.message = message;
-  this.name = "Error: Date validation failed.";
+  this.name = "ERROR: Date validation failed.";
 }
 
+// Some bugs here...
 // NEED TO FIX THIS! If theres no data between start and end (for example saturday-sunday) it will give range of fri-mon.
 const checkCustomDates = (array, mode, dates, meta) => {
   let newDates = dates;
-  console.log(`checking dates now`);
+  console.log(
+    `checking dates now ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}`
+  );
   console.log("custom dates selected, finding indexes");
 
   newDates.base.firstIndex = array.findIndex(
     (item) => item.Date.getTime() >= dates.base.first.getTime()
   );
-  if (dates.base.last.getTime() < meta.lastTime) {
+  console.log(`${dates.base.last.getTime()} vs ${meta.lastTime}`);
+  if (dates.base.last.getTime() < meta.lastDateTime) {
+    console.log("inside");
     newDates.base.lastIndex =
       array.findIndex(
-        (item) => item.Date.getTime() > dates.base.last.getTime()
+        (item) => item.Date.getTime() > newDates.base.last.getTime()
       ) - 1;
   } else {
     newDates.base.lastIndex = meta.lastIndex;
@@ -28,6 +33,11 @@ const checkCustomDates = (array, mode, dates, meta) => {
     `base.first ${newDates.base.first.toDateString()}, first index set to ${
       newDates.base.firstIndex
     } and it has ${array[newDates.base.firstIndex].Date.toDateString()}`
+  );
+  console.log(
+    `base.last ${newDates.base.last.toDateString()}, last index set to ${
+      newDates.base.lastIndex
+    } and it has ${array[newDates.base.lastIndex].Date.toDateString()}`
   );
   return newDates;
 };
@@ -55,7 +65,6 @@ const countSimpleMovingAverage = (array) => {
 // Returns all entries from object between given date range and also dates
 // before the starting day, if needed, according to mode settings
 const entriesByDate = (array, mode, dates) => {
-  // } else {
   // console.log("validation successful, now searching entriesByDate");
   let chosenEntries = [];
   let addExtras = mode != 0 ? true : false;
@@ -132,7 +141,6 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
   let validateInput = new Date(input);
 
   if (Object.prototype.toString.call(validateInput) === "[object Date]") {
-    // it is a date
     if (isNaN(validateInput.getTime())) {
       throw new InvalidDatesException(
         `"${input}" is not a valid ${
@@ -140,54 +148,51 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
         } date, please try again.`
       );
     }
-    // else if (isNaN(input.getTime())) {
-    //   throw new TypeError("Not a valid ending date, please try again.");
-    // }
   } else {
     throw new InvalidDatesException(
-      "Not a proper date object, please try again."
+      "Not a proper date object, please try again and follow the instructions."
     );
   }
-
   let givenDateTime = validateInput.getTime();
   let givenDateString = validateInput.toDateString();
-  // let givenFirstDateTime = dates.base.first.getTime();
-  // let givenLastDateTime = dates.base.last.getTime();
-  // let givenFirstDateString = dates.base.first.toDateString();
-  // let givenLastDateString = dates.base.last.toDateString();
-  if (isStart) {
-    if (givenDateTime < meta.firstDateTime) {
-      throw new InvalidDatesException(
-        `Given starting date ${givenDateString} not available in data. First available date is ${meta.firstDateString}.`
-      );
-    } else if (givenDateTime < meta.modeFirstDateTime) {
-      throw new InvalidDatesException(
-        `Not enough data available for this mode. First available date for mode ${
-          index + 1
-        } is ${meta.modeFirstDateString}.`
-      );
-    } else if (givenDateTime > meta.secondToLastDateTime) {
-      throw new InvalidDatesException(
-        `Given starting date ${givenDateString} not available in data. Last available starting date is ${meta.secondToLastDateString}.`
-      );
-    }
-  } else {
-    if (givenDateTime <= startInput.getTime()) {
-      throw new InvalidDatesException(
-        `Ending date must be after starting day.`
-      );
-    }
-    if (givenDateTime > meta.lastDateTime) {
-      throw new InvalidDatesException(
-        `Given ending date ${givenDateString} not available in data. Last available date is ${meta.lastDateString}.`
-      );
-    }
+  if (isStart && givenDateTime < meta.firstDateTime) {
+    throw new InvalidDatesException(
+      `Given date ${givenDateString} not available in data. First available date for mode ${
+        index + 1
+      } is ${meta.modeFirstDateString}.`
+    );
+  } else if (isStart && givenDateTime < meta.modeFirstDateTime) {
+    throw new InvalidDatesException(
+      `Not enough data available for this mode. First available date for mode ${
+        index + 1
+      } is ${meta.modeFirstDateString}.`
+    );
+  } else if (isStart && givenDateTime > meta.secondToLastDateTime) {
+    throw new InvalidDatesException(
+      `Given starting date ${givenDateString} not available in data. Last available starting date is ${meta.secondToLastDateString}.`
+    );
+  } else if (isStart && givenDateTime > meta.lastDateTime) {
+    throw new InvalidDatesException(
+      `Given date ${givenDateString} not available in data. Last available date is ${meta.lastDateTime}.`
+    );
+  } else if (!isStart && givenDateTime < startInput.getTime()) {
+    throw new InvalidDatesException(
+      `Ending date must be after the starting date.`
+    );
+  } else if (!isStart && givenDateTime === startInput.getTime()) {
+    throw new InvalidDatesException(
+      `Ending date can't be the same as starting date.`
+    );
+  } else if (!isStart && givenDateTime > meta.lastDateTime) {
+    throw new InvalidDatesException(
+      `Given date ${givenDateString} not available in data. Last available date is ${meta.lastDateString}.`
+    );
   }
   return true;
 };
 const validateDates = (array, mode, dates, index) => {
-  console.log("validating dates");
-  console.log(`mode is ${mode} and index ${index}`);
+  // console.log("validating dates");
+  // console.log(`mode is ${mode} and index ${index}`);
   // This includes metainformation of the given array
   let meta = {
     firstDateTime: array[0].Date.getTime(),
@@ -204,15 +209,15 @@ const validateDates = (array, mode, dates, index) => {
     dates.base.last = array[array.length - 1].Date;
     dates.base.firstIndex = mode;
     dates.base.lastIndex = array.length - 1;
-    console.log(
-      "automatically adjusted starting day to " +
-        dates.base.first.toDateString() +
-        " and ending day to " +
-        dates.base.last.toDateString() +
-        " and indexes to " +
-        dates.base.firstIndex +
-        dates.base.lastIndex
-    );
+    // console.log(
+    //   "automatically adjusted starting day to " +
+    //     dates.base.first.toDateString() +
+    //     " and ending day to " +
+    //     dates.base.last.toDateString() +
+    //     " and indexes to " +
+    //     dates.base.firstIndex +
+    //     dates.base.lastIndex
+    // );
   } else {
     // console.log("custom dates found so lets validate here");
 
@@ -223,15 +228,15 @@ const validateDates = (array, mode, dates, index) => {
 
     if (givenFirstDateTime < meta.firstDateTime) {
       throw new InvalidDatesException(
-        `ERROR! Starting day ${givenFirstDateString} not available in data. First available date is ${meta.firstDateString} `
+        `Starting day ${givenFirstDateString} not available in data. First available date is ${meta.firstDateString} `
       );
     } else if (givenLastDateTime > meta.lastDateTime) {
       throw new InvalidDatesException(
-        `ERROR! Ending day ${givenLastDateString} not available in data. Last available date is ${meta.lastDateString} `
+        `Ending day ${givenLastDateString} not available in data. Last available date is ${meta.lastDateString} `
       );
     } else if (givenFirstDateTime < meta.modeFirstDateTime) {
       throw new InvalidDatesException(
-        `ERROR! Starting day ${givenFirstDateString} not available in data for this mode. First available date for mode ${
+        `Starting day ${givenFirstDateString} not available in data for this mode. First available date for mode ${
           index + 1
         } is ${meta.modeFirstDateString} `
       );
@@ -242,8 +247,8 @@ const validateDates = (array, mode, dates, index) => {
       dates = checkCustomDates(array, mode, dates, meta);
     }
   }
-  console.log("now we have validated and it looks like this");
-  console.log(dates);
+  // console.log("now we have validated and it looks like this");
+  // console.log(dates);
   return dates;
 };
 

@@ -13,7 +13,6 @@ let mode;
 let path;
 let fileFirstEntry;
 let fileLastEntry;
-let firstTime = true;
 let sameDates = false;
 let startOver = true;
 let stillAnalyzing = true;
@@ -29,11 +28,10 @@ let dates = {
 
 path = "test_data/Test3.csv";
 
+// APP STARTING POINT
+console.log("Welcome to your personal stock analysist Mr. McDuck!");
 while (stillAnalyzing) {
   let errorStatus = false;
-  if (firstTime) {
-    console.log("Welcome to your personal stock analysist Mr. McDuck!");
-  }
   let fileReadSuccess = false;
   while (!fileReadSuccess) {
     try {
@@ -54,8 +52,8 @@ while (stillAnalyzing) {
       }
       fileReadSuccess = true;
     } catch (err) {
-      console.log(`${err.name} ${err.message}`);
       fileReadSuccess = false;
+      console.log(`${err.name} ${err.message}`);
     }
   }
   try {
@@ -63,6 +61,7 @@ while (stillAnalyzing) {
         "Find bullish (upward) trends",
         "Find highest trading volumes and most significant price changes within a day",
         "Find which dates had the best opening price compared to 5 days simple moving average",
+        // "List all entries within data",
       ],
       index = readlineSync.keyInSelect(
         modes,
@@ -79,67 +78,77 @@ while (stillAnalyzing) {
     } else if (index === 2) {
       mode = 5;
     } else {
+      stillAnalyzing = false;
       break;
     }
-    if (!sameDates) {
-      // This if is nested and not as pretty as it could be, but since we are using console UI and readline-sync, it is what it is.
-      if (
-        readlineSync.keyInYN(
-          "Do you want to provide a custom date range within the data?"
-        )
-      ) {
-        dates.custom = true;
-        let validStart = false;
-        let validEnd = false;
-        let startInput = "";
-        let endInput = "";
-        while (!validStart) {
-          try {
-            startInput = readlineSync.question(
-              `Provide a starting date (month/day/year): `
-            );
-            validStart = isValidDate(startInput, data, mode, index, true);
-          } catch (err) {
-            console.log(`${err.name} ${err.message}`);
+    let validationSuccess = false;
+    while (!validationSuccess) {
+      if (!sameDates) {
+        // This if is nested and not as pretty as it could be, but since we are using console UI and readline-sync, it is what it is.
+        if (
+          readlineSync.keyInYN(
+            "Do you want to provide a custom date range within the data?"
+          )
+        ) {
+          dates.custom = true;
+          let validStart = false;
+          let validEnd = false;
+          let startInput = "";
+          let endInput = "";
+          while (!validStart) {
+            try {
+              startInput = readlineSync.question(
+                `Provide a starting date (month/day/year): `
+              );
+              validStart = isValidDate(startInput, data, mode, index, true);
+            } catch (err) {
+              console.log(`${err.name} ${err.message}`);
+            }
           }
-        }
-        dates.base.first = new Date(startInput);
-        console.log(
-          `Custom range starting day set as ${dates.base.first.toDateString()}.`
-        );
-        while (!validEnd) {
-          try {
-            endInput = readlineSync.question(
-              `Provide an ending date (month/day/year): `
-            );
-            validEnd = isValidDate(
-              endInput,
-              data,
-              mode,
-              index,
-              false,
-              dates.base.first
-            );
-          } catch (err) {
-            console.log(`${err.name} ${err.message}`);
+          dates.base.first = new Date(startInput);
+          console.log(
+            `Custom range starting day set as ${dates.base.first.toDateString()}.`
+          );
+          while (!validEnd) {
+            try {
+              endInput = readlineSync.question(
+                `Provide an ending date (month/day/year): `
+              );
+              validEnd = isValidDate(
+                endInput,
+                data,
+                mode,
+                index,
+                false,
+                dates.base.first
+              );
+            } catch (err) {
+              console.log(`${err.name} ${err.message}`);
+            }
           }
+          dates.base.last = new Date(endInput);
+          console.log(
+            `Custom range set to ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}.`
+          );
+        } else {
+          dates.custom = false;
+          dates.base.first = fileFirstEntry;
+          dates.base.last = fileLastEntry;
+          dates.base.firstIndex = 0;
+          dates.base.lastIndex = data.length - 1;
         }
-        dates.base.last = new Date(endInput);
-        console.log(
-          `Custom range set as ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}.`
-        );
-      } else {
-        dates.custom = false;
-        dates.base.first = fileFirstEntry;
-        dates.base.last = fileLastEntry;
-        dates.base.firstIndex = 0;
-        dates.base.lastIndex = data.length - 1;
+      }
+      try {
+        dates = validateDates(data, mode, dates, index);
+        validationSuccess = true;
+      } catch (err) {
+        errorStatus = true;
+        console.log(`${err.name} ${err.message}`);
       }
     }
-    dates = validateDates(data, mode, dates, index);
     let selected = entriesByDate(data, mode, dates);
-    console.log("selected prints this");
-    console.log(selected);
+    // console.log("selected prints this");
+    // console.log(selected);
     // analyzeStockData(selected, mode, dates);
     if (mode == 1) {
       longestTrends(selected);
@@ -148,21 +157,20 @@ while (stillAnalyzing) {
     } else if (mode == 5) {
       bestSMA5(selected);
     }
-
     console.log("Task completed.");
   } catch (err) {
     errorStatus = true;
-    // console.log(err.name);
-    console.log(err.message);
+    console.log(`${err.name} ${err.message}`);
   } finally {
     if (
+      stillAnalyzing &&
       readlineSync.keyInYN(
         `Do you want to continue analyzing this file "${path}"?`
       )
     ) {
       // 'Y' key was pressed.
       startOver = false;
-      firstTime = false;
+
       if (
         !errorStatus &&
         dates.custom &&
@@ -176,16 +184,17 @@ while (stillAnalyzing) {
       }
     } else {
       // Another key was pressed.
-      if (readlineSync.keyInYN(`Do you want to continue with another file?`)) {
+      if (
+        stillAnalyzing &&
+        readlineSync.keyInYN(`Do you want to continue with another file?`)
+      ) {
         // 'Y' key was pressed.
         sameDates = false;
         startOver = true;
         stillAnalyzing = true;
-        firstTime = false;
       } else {
         startOver = false;
         stillAnalyzing = false;
-        firstTime = false;
       }
     }
   }
