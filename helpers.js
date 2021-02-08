@@ -4,13 +4,15 @@
 
 function InvalidDatesException(message) {
   this.message = message;
-  this.name = "Error: Invalid Date.";
+  this.name = "Error: Date validation failed.";
 }
 
+// NEED TO FIX THIS! If theres no data between start and end (for example saturday-sunday) it will give range of fri-mon.
 const checkCustomDates = (array, mode, dates, meta) => {
   let newDates = dates;
-  // console.log(`checking dates now`);
-  // console.log("custom dates selected, finding indexes");
+  console.log(`checking dates now`);
+  console.log("custom dates selected, finding indexes");
+
   newDates.base.firstIndex = array.findIndex(
     (item) => item.Date.getTime() >= dates.base.first.getTime()
   );
@@ -22,6 +24,11 @@ const checkCustomDates = (array, mode, dates, meta) => {
   } else {
     newDates.base.lastIndex = meta.lastIndex;
   }
+  console.log(
+    `base.first ${newDates.base.first.toDateString()}, first index set to ${
+      newDates.base.firstIndex
+    } and it has ${array[newDates.base.firstIndex].Date.toDateString()}`
+  );
   return newDates;
 };
 
@@ -117,6 +124,8 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
     firstDateString: array[0].Date.toDateString(),
     lastDateString: array[array.length - 1].Date.toDateString(),
     lastIndex: array.length - 1,
+    secondToLastDateTime: array[array.length - 2].Date.getTime(),
+    secondToLastDateString: array[array.length - 2].Date.toDateString(),
     modeFirstDateTime: array[mode].Date.getTime(),
     modeFirstDateString: array[mode].Date.toDateString(),
   };
@@ -126,14 +135,18 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
     // it is a date
     if (isNaN(validateInput.getTime())) {
       throw new InvalidDatesException(
-        `Not a valid ${isStart ? "starting" : "ending"} date, please try again.`
+        `"${input}" is not a valid ${
+          isStart ? "starting" : "ending"
+        } date, please try again.`
       );
     }
     // else if (isNaN(input.getTime())) {
     //   throw new TypeError("Not a valid ending date, please try again.");
     // }
   } else {
-    throw new InvalidDatesException("Not a proper date, please try again.");
+    throw new InvalidDatesException(
+      "Not a proper date object, please try again."
+    );
   }
 
   let givenDateTime = validateInput.getTime();
@@ -153,6 +166,10 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
           index + 1
         } is ${meta.modeFirstDateString}.`
       );
+    } else if (givenDateTime > meta.secondToLastDateTime) {
+      throw new InvalidDatesException(
+        `Given starting date ${givenDateString} not available in data. Last available starting date is ${meta.secondToLastDateString}.`
+      );
     }
   } else {
     if (givenDateTime <= startInput.getTime()) {
@@ -169,25 +186,9 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
   return true;
 };
 const validateDates = (array, mode, dates, index) => {
-  // console.log("validating dates");
-  // console.log(`mode is ${mode} and index ${index}`);
+  console.log("validating dates");
+  console.log(`mode is ${mode} and index ${index}`);
   // This includes metainformation of the given array
-
-  // if (Object.prototype.toString.call(dates.base.first) === "[object Date]") {
-  //   // it is a date
-  //   if (isNaN(dates.base.first.getTime())) {
-  //     throw new TypeError(
-  //       "ERROR! Not a valid starting date, please try again."
-  //     );
-  //   } else if (isNaN(dates.base.last.getTime())) {
-  //     throw new TypeError("ERROR! Not a valid ending date, please try again.");
-  //   } else {
-  //     validDate = true;
-  //   }
-  // } else {
-  //   throw new TypeError("ERROR! Not a date, please try again.");
-  // }
-
   let meta = {
     firstDateTime: array[0].Date.getTime(),
     lastDateTime: array[array.length - 1].Date.getTime(),
@@ -203,15 +204,15 @@ const validateDates = (array, mode, dates, index) => {
     dates.base.last = array[array.length - 1].Date;
     dates.base.firstIndex = mode;
     dates.base.lastIndex = array.length - 1;
-    // console.log(
-    //   "automatically adjusted starting day to " +
-    //     dates.base.first.toDateString() +
-    //     " and ending day to " +
-    //     dates.base.last.toDateString() +
-    //     " and indexes to " +
-    //     dates.base.firstIndex +
-    //     dates.base.lastIndex
-    // );
+    console.log(
+      "automatically adjusted starting day to " +
+        dates.base.first.toDateString() +
+        " and ending day to " +
+        dates.base.last.toDateString() +
+        " and indexes to " +
+        dates.base.firstIndex +
+        dates.base.lastIndex
+    );
   } else {
     // console.log("custom dates found so lets validate here");
 
@@ -241,6 +242,8 @@ const validateDates = (array, mode, dates, index) => {
       dates = checkCustomDates(array, mode, dates, meta);
     }
   }
+  console.log("now we have validated and it looks like this");
+  console.log(dates);
   return dates;
 };
 

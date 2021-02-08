@@ -1,6 +1,6 @@
 import readlineSync from "readline-sync";
 import csv from "csvtojson";
-import { analyzeStockData } from "./finders.js";
+import { bestSMA5, longestTrends, volumesAndPriceChanges } from "./finders.js";
 import {
   entriesByDate,
   formatDataArray,
@@ -58,30 +58,31 @@ while (stillAnalyzing) {
       fileReadSuccess = false;
     }
   }
-  let modes = [
-      "Find bullish (upward) trends",
-      "Find highest trading volumes and most significant price changes within a day",
-      "Find which dates had the best opening price compared to 5 days simple moving average",
-    ],
-    index = readlineSync.keyInSelect(
-      modes,
-      "In which mode do you want to analyze this data?"
-    );
-  // console.log(`Ok, mode ${index + 1} selected`);
-  // According to user's selection, mode is set to 1, 0 or 5. This number means how many
-  // entries we need to pick from the data before the starting day, so it works properly
-  // on each main function.
-  if (index === 0) {
-    mode = 1;
-  } else if (index === 1) {
-    mode = 0;
-  } else if (index === 2) {
-    mode = 5;
-  } else {
-    break;
-  }
   try {
+    let modes = [
+        "Find bullish (upward) trends",
+        "Find highest trading volumes and most significant price changes within a day",
+        "Find which dates had the best opening price compared to 5 days simple moving average",
+      ],
+      index = readlineSync.keyInSelect(
+        modes,
+        "In which mode do you want to analyze this data?"
+      );
+    // console.log(`Ok, mode ${index + 1} selected`);
+    // According to user's selection, mode is set to 1, 0 or 5. This number means how many
+    // entries we need to pick from the data before the starting day, so it works properly
+    // on each main function.
+    if (index === 0) {
+      mode = 1;
+    } else if (index === 1) {
+      mode = 0;
+    } else if (index === 2) {
+      mode = 5;
+    } else {
+      break;
+    }
     if (!sameDates) {
+      // This if is nested and not as pretty as it could be, but since we are using console UI and readline-sync, it is what it is.
       if (
         readlineSync.keyInYN(
           "Do you want to provide a custom date range within the data?"
@@ -103,6 +104,9 @@ while (stillAnalyzing) {
           }
         }
         dates.base.first = new Date(startInput);
+        console.log(
+          `Custom range starting day set as ${dates.base.first.toDateString()}.`
+        );
         while (!validEnd) {
           try {
             endInput = readlineSync.question(
@@ -121,28 +125,9 @@ while (stillAnalyzing) {
           }
         }
         dates.base.last = new Date(endInput);
-        // while (!validStart) {
-        //   try {
-        //     let input = readlineSync.question(
-        //       `Provide a starting date (month/day/year): `
-        //     );
-        //     dates.base.first = isValidDate(input, data, mode, index, true);
-        //     validStart = true;
-        //   } catch (err) {
-        //     console.log(`${err.name}. ${err.message}`);
-        //   }
-        // }
-        // while (!validEnd) {
-        //   try {
-        //     let input = readlineSync.question(
-        //       `Provide an ending date (month/day/year): `
-        //     );
-        //     dates.base.last = isValidDate(input, data, mode, index, true);
-        //     validEnd = true;
-        //   } catch (err) {
-        //     console.log(`${err.name} ${err.message}`);
-        //   }
-        // }
+        console.log(
+          `Custom range set as ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}.`
+        );
       } else {
         dates.custom = false;
         dates.base.first = fileFirstEntry;
@@ -153,7 +138,17 @@ while (stillAnalyzing) {
     }
     dates = validateDates(data, mode, dates, index);
     let selected = entriesByDate(data, mode, dates);
-    analyzeStockData(selected, mode, dates);
+    console.log("selected prints this");
+    console.log(selected);
+    // analyzeStockData(selected, mode, dates);
+    if (mode == 1) {
+      longestTrends(selected);
+    } else if (mode == 0) {
+      volumesAndPriceChanges(selected);
+    } else if (mode == 5) {
+      bestSMA5(selected);
+    }
+
     console.log("Task completed.");
   } catch (err) {
     errorStatus = true;
