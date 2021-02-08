@@ -1,7 +1,12 @@
 import readlineSync from "readline-sync";
 import csv from "csvtojson";
 import { analyzeStockData } from "./finders.js";
-import { entriesByDate, formatDataArray, validateDates } from "./helpers.js";
+import {
+  entriesByDate,
+  formatDataArray,
+  validateDates,
+  isValidDate,
+} from "./helpers.js";
 
 let data;
 let mode;
@@ -22,31 +27,37 @@ let dates = {
   },
 };
 
-// path = "test_data/Test3.csv";
+path = "test_data/Test3.csv";
 
 while (stillAnalyzing) {
   let errorStatus = false;
   if (firstTime) {
     console.log("Welcome to your personal stock analysist Mr. McDuck!");
   }
-  if (startOver) {
-    // console.log("now choosing file");
-    path = readlineSync.question(
-      "Please provide the name of a csv file to import data from: "
-    );
-    // console.log("selected file " + path);
-    data = await csv().fromFile(path);
-    data = formatDataArray(data);
-    // console.log("data formatted");
-    fileFirstEntry = new Date(data[0].Date);
-    fileLastEntry = new Date(data[data.length - 1].Date);
+  let fileReadSuccess = false;
+  while (!fileReadSuccess) {
+    try {
+      if (startOver) {
+        // path = readlineSync.question(
+        //   "Please provide the name of a csv file to import data from: "
+        // );
+        data = await csv().fromFile(path);
+        data = formatDataArray(data);
+        fileFirstEntry = new Date(data[0].Date);
+        fileLastEntry = new Date(data[data.length - 1].Date);
+        console.log(`File read succesfully.`);
+      }
+      if (!sameDates) {
+        console.log(
+          `Date range of stock entries in file "${path}" is ${fileFirstEntry.toDateString()} - ${fileLastEntry.toDateString()}`
+        );
+      }
+      fileReadSuccess = true;
+    } catch (err) {
+      console.log(`${err.name} ${err.message}`);
+      fileReadSuccess = false;
+    }
   }
-  // console.log(
-  //   `Ready to analyze "${path}" with a date range of ${dates.first.toDateString()} - ${dates.last.toDateString()}`
-  // );
-  console.log(
-    `Date range of stock entries in file "${path}" is ${fileFirstEntry.toDateString()} - ${fileLastEntry.toDateString()}`
-  );
   let modes = [
       "Find bullish (upward) trends",
       "Find highest trading volumes and most significant price changes within a day",
@@ -76,46 +87,68 @@ while (stillAnalyzing) {
           "Do you want to provide a custom date range within the data?"
         )
       ) {
-        let validDate = false;
-        while (!validDate) {
+        dates.custom = true;
+        let validStart = false;
+        let validEnd = false;
+        let startInput = "";
+        let endInput = "";
+        while (!validStart) {
           try {
-            dates.custom = true;
-            (dates.base.first = new Date(
-              readlineSync.question(`Provide a starting date (m/d/y): `)
-            )),
-              (dates.base.last = new Date(
-                readlineSync.question(`Provide an ending date (m/d/y): `)
-              ));
-            if (
-              Object.prototype.toString.call(dates.base.first) ===
-              "[object Date]"
-            ) {
-              // it is a date
-              if (isNaN(dates.base.first.getTime())) {
-                throw new TypeError(
-                  "ERROR! Not a valid starting date, please try again."
-                );
-              } else if (isNaN(dates.base.last.getTime())) {
-                throw new TypeError(
-                  "ERROR! Not a valid ending date, please try again."
-                );
-              } else {
-                validDate = true;
-              }
-            } else {
-              throw new TypeError("ERROR! Not a date, please try again.");
-            }
+            startInput = readlineSync.question(
+              `Provide a starting date (month/day/year): `
+            );
+            validStart = isValidDate(startInput, data, mode, index, true);
           } catch (err) {
-            console.log(err.message);
+            console.log(`${err.name} ${err.message}`);
           }
         }
+        dates.base.first = new Date(startInput);
+        while (!validEnd) {
+          try {
+            endInput = readlineSync.question(
+              `Provide an ending date (month/day/year): `
+            );
+            validEnd = isValidDate(
+              endInput,
+              data,
+              mode,
+              index,
+              false,
+              dates.base.first
+            );
+          } catch (err) {
+            console.log(`${err.name} ${err.message}`);
+          }
+        }
+        dates.base.last = new Date(endInput);
+        // while (!validStart) {
+        //   try {
+        //     let input = readlineSync.question(
+        //       `Provide a starting date (month/day/year): `
+        //     );
+        //     dates.base.first = isValidDate(input, data, mode, index, true);
+        //     validStart = true;
+        //   } catch (err) {
+        //     console.log(`${err.name}. ${err.message}`);
+        //   }
+        // }
+        // while (!validEnd) {
+        //   try {
+        //     let input = readlineSync.question(
+        //       `Provide an ending date (month/day/year): `
+        //     );
+        //     dates.base.last = isValidDate(input, data, mode, index, true);
+        //     validEnd = true;
+        //   } catch (err) {
+        //     console.log(`${err.name} ${err.message}`);
+        //   }
+        // }
       } else {
-        // console.log(
-        //   "setting uncustom " + fileFirstEntry + " and " + fileLastEntry
-        // );
         dates.custom = false;
         dates.base.first = fileFirstEntry;
         dates.base.last = fileLastEntry;
+        dates.base.firstIndex = 0;
+        dates.base.lastIndex = data.length - 1;
       }
     }
     dates = validateDates(data, mode, dates, index);

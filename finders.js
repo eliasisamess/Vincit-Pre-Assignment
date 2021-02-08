@@ -4,6 +4,7 @@ import {
   countSimpleMovingAverage,
 } from "./helpers.js";
 
+// UNUSED STUFF HERE! dates ei oo käytössä ja tää on muutenki vähän turha funkkari tällä hetkellä, ehkä, vois olla suoraan tuol indexin puolellaki
 const analyzeStockData = (selected, mode, dates) => {
   if (mode == 1) {
     longestTrends(selected, dates);
@@ -171,4 +172,4 @@ const volumesAndPriceChanges = (array) => {
   // return newArray;
 };
 
-export { analyzeStockData };
+export { analyzeStockData, bestSMA5, longestTrends, volumesAndPriceChanges };

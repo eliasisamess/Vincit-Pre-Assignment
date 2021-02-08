@@ -4,13 +4,11 @@
 
 function InvalidDatesException(message) {
   this.message = message;
-  this.name = "Error: Invalid Date.";
+  this.name = "Error: Invalid dates";
 }
 
 const checkCustomDates = (array, mode, dates, meta) => {
   let newDates = dates;
-  // console.log(`checking dates now`);
-  // console.log("custom dates selected, finding indexes");
   newDates.base.firstIndex = array.findIndex(
     (item) => item.Date.getTime() >= dates.base.first.getTime()
   );
@@ -110,7 +108,10 @@ const formatStockMoney = (string) => {
   return formatted.toFixed(5);
 };
 
-const isValidDate = (input, array, mode, index, isStart, startInput) => {
+const isValidDate = (input, array, mode, index, isStart) => {
+  let givenDateTime = input.getTime();
+  let givenDateString = input.toDateString();
+
   let meta = {
     firstDateTime: array[0].Date.getTime(),
     lastDateTime: array[array.length - 1].Date.getTime(),
@@ -120,12 +121,26 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
     modeFirstDateTime: array[mode].Date.getTime(),
     modeFirstDateString: array[mode].Date.toDateString(),
   };
-  let validateInput = new Date(input);
-
-  if (Object.prototype.toString.call(validateInput) === "[object Date]") {
+  // if (!dates.custom) {
+  //   dates.base.first = array[mode].Date;
+  //   dates.base.last = array[array.length - 1].Date;
+  //   dates.base.firstIndex = mode;
+  //   dates.base.lastIndex = array.length - 1;
+  //   // console.log(
+  //   //   "automatically adjusted starting day to " +
+  //   //     dates.base.first.toDateString() +
+  //   //     " and ending day to " +
+  //   //     dates.base.last.toDateString() +
+  //   //     " and indexes to " +
+  //   //     dates.base.firstIndex +
+  //   //     dates.base.lastIndex
+  //   // );
+  // } else {
+  // console.log("custom dates found so lets validate here");
+  if (Object.prototype.toString.call(input) === "[object Date]") {
     // it is a date
-    if (isNaN(validateInput.getTime())) {
-      throw new InvalidDatesException(
+    if (isNaN(input.getTime())) {
+      throw new TypeError(
         `Not a valid ${isStart ? "starting" : "ending"} date, please try again.`
       );
     }
@@ -133,11 +148,9 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
     //   throw new TypeError("Not a valid ending date, please try again.");
     // }
   } else {
-    throw new InvalidDatesException("Not a proper date, please try again.");
+    throw new TypeError("Not a proper date, please try again.");
   }
 
-  let givenDateTime = validateInput.getTime();
-  let givenDateString = validateInput.toDateString();
   // let givenFirstDateTime = dates.base.first.getTime();
   // let givenLastDateTime = dates.base.last.getTime();
   // let givenFirstDateString = dates.base.first.toDateString();
@@ -145,49 +158,30 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
   if (isStart) {
     if (givenDateTime < meta.firstDateTime) {
       throw new InvalidDatesException(
-        `Given starting date ${givenDateString} not available in data. First available date is ${meta.firstDateString}.`
+        `Starting day ${givenDateString} not available in data. First available date is ${meta.firstDateString} `
       );
     } else if (givenDateTime < meta.modeFirstDateTime) {
       throw new InvalidDatesException(
         `Not enough data available for this mode. First available date for mode ${
           index + 1
-        } is ${meta.modeFirstDateString}.`
+        } is ${meta.modeFirstDateString} `
       );
     }
+    // return true;
   } else {
-    if (givenDateTime <= startInput.getTime()) {
-      throw new InvalidDatesException(
-        `Ending date must be after starting day.`
-      );
-    }
     if (givenDateTime > meta.lastDateTime) {
       throw new InvalidDatesException(
-        `Given ending date ${givenDateString} not available in data. Last available date is ${meta.lastDateString}.`
+        `Ending day ${givenDateString} not available in data. Last available date is ${meta.lastDateString} `
       );
     }
   }
   return true;
 };
+
 const validateDates = (array, mode, dates, index) => {
   // console.log("validating dates");
   // console.log(`mode is ${mode} and index ${index}`);
   // This includes metainformation of the given array
-
-  // if (Object.prototype.toString.call(dates.base.first) === "[object Date]") {
-  //   // it is a date
-  //   if (isNaN(dates.base.first.getTime())) {
-  //     throw new TypeError(
-  //       "ERROR! Not a valid starting date, please try again."
-  //     );
-  //   } else if (isNaN(dates.base.last.getTime())) {
-  //     throw new TypeError("ERROR! Not a valid ending date, please try again.");
-  //   } else {
-  //     validDate = true;
-  //   }
-  // } else {
-  //   throw new TypeError("ERROR! Not a date, please try again.");
-  // }
-
   let meta = {
     firstDateTime: array[0].Date.getTime(),
     lastDateTime: array[array.length - 1].Date.getTime(),
@@ -200,46 +194,56 @@ const validateDates = (array, mode, dates, index) => {
   // console.log(meta);
   if (!dates.custom) {
     dates.base.first = array[mode].Date;
-    dates.base.last = array[array.length - 1].Date;
+    dates.base.last = array[lastIndex].Date;
     dates.base.firstIndex = mode;
-    dates.base.lastIndex = array.length - 1;
-    // console.log(
-    //   "automatically adjusted starting day to " +
-    //     dates.base.first.toDateString() +
-    //     " and ending day to " +
-    //     dates.base.last.toDateString() +
-    //     " and indexes to " +
-    //     dates.base.firstIndex +
-    //     dates.base.lastIndex
-    // );
+    dates.base.lastIndex = lastIndex;
+    console.log(
+      "automatically adjusted starting day to " +
+        dates.base.first.toDateString() +
+        " and ending day to " +
+        dates.base.last.toDateString() +
+        " and indexes to " +
+        dates.base.firstIndex +
+        " and " +
+        dates.base.lastIndex
+    );
   } else {
-    // console.log("custom dates found so lets validate here");
+    console.log(
+      "custom dates found and should be found inside array so lets adjust where to start"
+    );
+    // let givenFirstDateTime = dates.base.first.getTime();
+    // let givenLastDateTime = dates.base.last.getTime();
+    // let givenFirstDateString = dates.base.first.toDateString();
+    // let givenLastDateString = dates.base.last.toDateString();
 
-    let givenFirstDateTime = dates.base.first.getTime();
-    let givenLastDateTime = dates.base.last.getTime();
-    let givenFirstDateString = dates.base.first.toDateString();
-    let givenLastDateString = dates.base.last.toDateString();
+    // // If
+    // if (
+    //   givenFirstDateTime != meta.modeFirstDateTime ||
+    //   givenLastDateTime != meta.lastDateTime
+    // ) {
+    dates = checkCustomDates(array, mode, dates, meta);
+    // }
 
-    if (givenFirstDateTime < meta.firstDateTime) {
-      throw new InvalidDatesException(
-        `ERROR! Starting day ${givenFirstDateString} not available in data. First available date is ${meta.firstDateString} `
-      );
-    } else if (givenLastDateTime > meta.lastDateTime) {
-      throw new InvalidDatesException(
-        `ERROR! Ending day ${givenLastDateString} not available in data. Last available date is ${meta.lastDateString} `
-      );
-    } else if (givenFirstDateTime < meta.modeFirstDateTime) {
-      throw new InvalidDatesException(
-        `ERROR! Starting day ${givenFirstDateString} not available in data for this mode. First available date for mode ${
-          index + 1
-        } is ${meta.modeFirstDateString} `
-      );
-    } else if (
-      givenFirstDateTime != meta.modeFirstDateTime ||
-      givenLastDateTime != meta.lastDateTime
-    ) {
-      dates = checkCustomDates(array, mode, dates, meta);
-    }
+    // if (givenFirstDateTime < meta.firstDateTime) {
+    //   throw new InvalidDatesException(
+    //     `Starting day ${givenFirstDateString} not available in data. First available date is ${meta.firstDateString} `
+    //   );
+    // } else if (givenLastDateTime > meta.lastDateTime) {
+    //   throw new InvalidDatesException(
+    //     `Ending day ${givenLastDateString} not available in data. Last available date is ${meta.lastDateString} `
+    //   );
+    // } else if (givenFirstDateTime < meta.modeFirstDateTime) {
+    //   throw new InvalidDatesException(
+    //     `Starting day ${givenFirstDateString} not available in data for this mode. First available date for mode ${
+    //       index + 1
+    //     } is ${meta.modeFirstDateString} `
+    //   );
+    // } else if (
+    //   givenFirstDateTime != meta.modeFirstDateTime ||
+    //   givenLastDateTime != meta.lastDateTime
+    // ) {
+    //   dates = checkCustomDates(array, mode, dates, meta);
+    // }
   }
   return dates;
 };
