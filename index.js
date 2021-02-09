@@ -53,6 +53,7 @@ while (stillAnalyzing) {
       fileReadSuccess = true;
     } catch (err) {
       fileReadSuccess = false;
+      console.log("Catch 1");
       console.log(`${err.name} ${err.message}`);
     }
   }
@@ -102,6 +103,8 @@ while (stillAnalyzing) {
               );
               validStart = isValidDate(startInput, data, mode, index, true);
             } catch (err) {
+              console.log("Catch 2");
+
               console.log(`${err.name} ${err.message}`);
             }
           }
@@ -123,6 +126,7 @@ while (stillAnalyzing) {
                 dates.base.first
               );
             } catch (err) {
+              console.log("Catch 3");
               console.log(`${err.name} ${err.message}`);
             }
           }
@@ -139,9 +143,16 @@ while (stillAnalyzing) {
         }
       }
       try {
+        // console.log("log dates");
+        // console.log(dates);
+        // let datesNew = dates;
+        // console.log("log dates new:");
+        // console.log(datesNew);
         dates = validateDates(data, mode, dates, index);
         validationSuccess = true;
       } catch (err) {
+        console.log("Catch 4");
+
         errorStatus = true;
         console.log(`${err.name} ${err.message}`);
       }
@@ -159,6 +170,8 @@ while (stillAnalyzing) {
     }
     console.log("Task completed.");
   } catch (err) {
+    console.log("Catch 5");
+
     errorStatus = true;
     console.log(`${err.name} ${err.message}`);
   } finally {

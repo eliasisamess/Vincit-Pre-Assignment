@@ -7,40 +7,127 @@ function InvalidDatesException(message) {
   this.name = "ERROR: Date validation failed.";
 }
 
-// Some bugs here...
-// NEED TO FIX THIS! If theres no data between start and end (for example saturday-sunday) it will give range of fri-mon.
 const checkCustomDates = (array, mode, dates, meta) => {
-  let newDates = dates;
-  console.log(
-    `checking dates now ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}`
-  );
-  console.log("custom dates selected, finding indexes");
+  // console.log("checkin custom dates HÖLÖ");
+  // console.log(dates);
+  // let foundExact = null;
+  let foundFirstIndex;
+  // let foundFirstDateTime;
+  let foundLastIndex;
+  // let foundFirstExactIndex;
+  // let foundFirstNextIndex;
+  // let foundFirstExactDateTime;
+  // let foundFirstNextDateTime;
+  // let enoughDataBetween = false;
+  // console.log("gonna search fisrt noew");
+  for (let i = 0; i < array.length; i++) {
+    if (array[i].Date.getTime() === meta.givenFirstDateTime) {
+      console.log(
+        `EXACT object found at ${i} (${array[i].Date.toDateString()})`
+      );
+      foundFirstIndex = i;
+      console.log(
+        `Exact index set to ${foundFirstIndex} (${array[
+          foundFirstIndex
+        ].Date.toDateString()})`
+      );
+      foundFirstDateTime = array[i].Date.getTime();
+      break;
+    } else if (array[i].Date.getTime() > meta.givenFirstDateTime) {
+      console.log(
+        `NEXT object found at ${i} (${array[i].Date.toDateString()})`
+      );
+      foundFirstIndex = i;
+      console.log("Next index set to " + i);
+      console.log(
+        "That index includes this date: " +
+          array[foundFirstIndex].Date.toDateString()
+      );
+      foundFirstDateTime = array[i].Date.getTime();
+      break;
+    }
+  }
 
-  newDates.base.firstIndex = array.findIndex(
-    (item) => item.Date.getTime() >= dates.base.first.getTime()
-  );
-  console.log(`${dates.base.last.getTime()} vs ${meta.lastTime}`);
-  if (dates.base.last.getTime() < meta.lastDateTime) {
-    console.log("inside");
-    newDates.base.lastIndex =
-      array.findIndex(
-        (item) => item.Date.getTime() > newDates.base.last.getTime()
-      ) - 1;
+  console.log("gonna search last now");
+
+  for (let i = 0; i < array.length; i++) {
+    if (array[i].Date.getTime() === meta.givenLastDateTime) {
+      console.log("Exact last date found at index " + i);
+      console.log("That includes " + array[i].Date.toDateString());
+      foundLastIndex = i;
+      console.log("FoundL ast index set to " + foundLastIndex);
+      break;
+    } else if (array[i].Date.getTime() > meta.givenLastDateTime) {
+      console.log("Next last date found at index " + i);
+      console.log("That includes " + array[i].Date.toDateString());
+      foundLastIndex = i - 1;
+      console.log("found last index set to " + foundLastIndex);
+      console.log("it includes " + array[foundLastIndex].Date.toDateString());
+      break;
+    }
+  }
+  if (
+    array[foundFirstIndex].Date.getTime() >=
+    array[foundLastIndex].Date.getTime()
+  ) {
+    throw new InvalidDatesException(
+      `Not enough data available between given dates.`
+    );
   } else {
-    newDates.base.lastIndex = meta.lastIndex;
+    console.log(
+      "enough data found between " +
+        meta.givenFirstDateString +
+        " and " +
+        meta.givenLastDateString
+    );
+    dates.base.firstIndex = foundFirstIndex;
+    dates.base.lastIndex = foundLastIndex;
+    // console.log(
+    //   `foundFirstIndex ${foundFirstIndex} foundLastIndex) ${foundLastIndex}`
+    // );
   }
   console.log(
-    `base.first ${newDates.base.first.toDateString()}, first index set to ${
-      newDates.base.firstIndex
-    } and it has ${array[newDates.base.firstIndex].Date.toDateString()}`
+    "quadruple check round: " +
+      array[dates.base.firstIndex].Date.toDateString() +
+      " - " +
+      array[dates.base.lastIndex].Date.toDateString()
   );
-  console.log(
-    `base.last ${newDates.base.last.toDateString()}, last index set to ${
-      newDates.base.lastIndex
-    } and it has ${array[newDates.base.lastIndex].Date.toDateString()}`
-  );
-  return newDates;
+  return dates;
 };
+// Some bugs here...
+// NEED TO FIX THIS! If theres no data between start and end (for example saturday-sunday) it will give range of fri-mon.
+// const checkCustomDates = (array, mode, dates, meta) => {
+//   let newDates = dates;
+//   console.log(
+//     `checking dates now ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}`
+//   );
+//   console.log("custom dates selected, finding indexes");
+
+//   newDates.base.firstIndex = array.findIndex(
+//     (item) => item.Date.getTime() >= dates.base.first.getTime()
+//   );
+//   console.log(`${dates.base.last.getTime()} vs ${meta.lastTime}`);
+//   if (dates.base.last.getTime() < meta.lastDateTime) {
+//     console.log("inside");
+//     newDates.base.lastIndex =
+//       array.findIndex(
+//         (item) => item.Date.getTime() > newDates.base.last.getTime()
+//       ) - 1;
+//   } else {
+//     newDates.base.lastIndex = meta.lastIndex;
+//   }
+//   console.log(
+//     `base.first ${newDates.base.first.toDateString()}, first index set to ${
+//       newDates.base.firstIndex
+//     } and it has ${array[newDates.base.firstIndex].Date.toDateString()}`
+//   );
+//   console.log(
+//     `base.last ${newDates.base.last.toDateString()}, last index set to ${
+//       newDates.base.lastIndex
+//     } and it has ${array[newDates.base.lastIndex].Date.toDateString()}`
+//   );
+//   return newDates;
+// };
 
 const countDifference = (a, b) => {
   let result = a - b;
@@ -193,6 +280,8 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
 const validateDates = (array, mode, dates, index) => {
   // console.log("validating dates");
   // console.log(`mode is ${mode} and index ${index}`);
+  // console.log("dates inside validateDates:");
+  // console.log(dates);
   // This includes metainformation of the given array
   let meta = {
     firstDateTime: array[0].Date.getTime(),
@@ -203,49 +292,53 @@ const validateDates = (array, mode, dates, index) => {
     modeFirstDateTime: array[mode].Date.getTime(),
     modeFirstDateString: array[mode].Date.toDateString(),
   };
+  // console.log("this is meta");
   // console.log(meta);
   if (!dates.custom) {
     dates.base.first = array[mode].Date;
     dates.base.last = array[array.length - 1].Date;
     dates.base.firstIndex = mode;
     dates.base.lastIndex = array.length - 1;
-    // console.log(
-    //   "automatically adjusted starting day to " +
-    //     dates.base.first.toDateString() +
-    //     " and ending day to " +
-    //     dates.base.last.toDateString() +
-    //     " and indexes to " +
-    //     dates.base.firstIndex +
-    //     dates.base.lastIndex
-    // );
-  } else {
+    console.log(
+      "automatically adjusted starting day to " +
+        dates.base.first.toDateString() +
+        " and ending day to " +
+        dates.base.last.toDateString() +
+        " and indexes to " +
+        dates.base.firstIndex +
+        dates.base.lastIndex
+    );
+  } else if (dates.custom) {
     // console.log("custom dates found so lets validate here");
+    // console.log("again dates:");
+    // console.log(dates);
+    meta.givenFirstDateTime = dates.base.first.getTime();
+    meta.givenLastDateTime = dates.base.last.getTime();
+    meta.givenFirstDateString = dates.base.first.toDateString();
+    meta.givenLastDateString = dates.base.last.toDateString();
 
-    let givenFirstDateTime = dates.base.first.getTime();
-    let givenLastDateTime = dates.base.last.getTime();
-    let givenFirstDateString = dates.base.first.toDateString();
-    let givenLastDateString = dates.base.last.toDateString();
-
-    if (givenFirstDateTime < meta.firstDateTime) {
-      throw new InvalidDatesException(
-        `Starting day ${givenFirstDateString} not available in data. First available date is ${meta.firstDateString} `
-      );
-    } else if (givenLastDateTime > meta.lastDateTime) {
-      throw new InvalidDatesException(
-        `Ending day ${givenLastDateString} not available in data. Last available date is ${meta.lastDateString} `
-      );
-    } else if (givenFirstDateTime < meta.modeFirstDateTime) {
-      throw new InvalidDatesException(
-        `Starting day ${givenFirstDateString} not available in data for this mode. First available date for mode ${
-          index + 1
-        } is ${meta.modeFirstDateString} `
-      );
-    } else if (
-      givenFirstDateTime != meta.modeFirstDateTime ||
-      givenLastDateTime != meta.lastDateTime
-    ) {
-      dates = checkCustomDates(array, mode, dates, meta);
-    }
+    // if (meta.givenFirstDateTime < meta.firstDateTime) {
+    //   throw new InvalidDatesException(
+    //     `Starting day ${givenFirstDateString} not available in data. First available date is ${meta.firstDateString} `
+    //   );
+    // } else if (meta.givenLastDateTime > meta.lastDateTime) {
+    //   throw new InvalidDatesException(
+    //     `Ending day ${meta.givenLastDateString} not available in data. Last available date is ${meta.lastDateString} `
+    //   );
+    // } else if (meta.givenFirstDateTime < meta.modeFirstDateTime) {
+    //   throw new InvalidDatesException(
+    //     `Starting day ${
+    //       meta.givenFirstDateString
+    //     } not available in data for this mode. First available date for mode ${
+    //       index + 1
+    //     } is ${meta.modeFirstDateString} `
+    //   );
+    //   // } else if (
+    //   //   givenFirstDateTime != meta.modeFirstDateTime ||
+    //   //   givenLastDateTime != meta.lastDateTime
+    //   // ) {
+    // }
+    dates = checkCustomDates(array, mode, dates, meta);
   }
   // console.log("now we have validated and it looks like this");
   // console.log(dates);
