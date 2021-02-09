@@ -134,7 +134,9 @@ const longestTrends = (array) => {
   }
   // console.log("Finished analyzing trends.");
   console.log(
-    `During given timerange the longest upwards trend was ${
+    `During given timerange (${array[1].Date.toDateString()} - ${array[
+      array.length - 1
+    ].Date.toDateString()}) the longest upwards trend was ${
       trends.firstLength + 1
     } days and there were ${trends.others.length} other similar trends:`
   );

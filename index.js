@@ -26,7 +26,7 @@ let dates = {
   },
 };
 
-path = "test_data/Test3.csv";
+// path = "test_data/Test3.csv";
 
 // APP STARTING POINT
 console.log("Welcome to your personal stock analysist Mr. McDuck!");
@@ -36,9 +36,9 @@ while (stillAnalyzing) {
   while (!fileReadSuccess) {
     try {
       if (startOver) {
-        // path = readlineSync.question(
-        //   "Please provide the name of a csv file to import data from: "
-        // );
+        path = readlineSync.question(
+          "Please provide the name of a csv file to import data from: "
+        );
         data = await csv().fromFile(path);
         data = formatDataArray(data);
         fileFirstEntry = new Date(data[0].Date);
