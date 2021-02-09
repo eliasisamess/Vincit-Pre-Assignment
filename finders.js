@@ -5,15 +5,15 @@ import {
 } from "./helpers.js";
 
 // UNUSED STUFF HERE! dates ei oo käytössä ja tää on muutenki vähän turha funkkari tällä hetkellä, ehkä, vois olla suoraan tuol indexin puolellaki
-const analyzeStockData = (selected, mode, dates) => {
-  if (mode == 1) {
-    longestTrends(selected, dates);
-  } else if (mode == 0) {
-    volumesAndPriceChanges(selected, dates);
-  } else if (mode == 5) {
-    bestSMA5(selected, dates);
-  }
-};
+// const analyzeStockData = (selected, mode, dates) => {
+//   if (mode == 1) {
+//     longestTrends(selected, dates);
+//   } else if (mode == 0) {
+//     volumesAndPriceChanges(selected, dates);
+//   } else if (mode == 5) {
+//     bestSMA5(selected, dates);
+//   }
+// };
 
 // BEST SMA5
 // Calculates simple moving average for day N using the average value of closing prices between days N-1 to N-5.
@@ -172,4 +172,4 @@ const volumesAndPriceChanges = (array) => {
   // return newArray;
 };
 
-export { analyzeStockData, bestSMA5, longestTrends, volumesAndPriceChanges };
+export { bestSMA5, longestTrends, volumesAndPriceChanges };

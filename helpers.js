@@ -12,7 +12,7 @@ const checkCustomDates = (array, mode, dates, meta) => {
   // console.log(dates);
   // let foundExact = null;
   let foundFirstIndex;
-  // let foundFirstDateTime;
+  let foundFirstDateTime;
   let foundLastIndex;
   // let foundFirstExactIndex;
   // let foundFirstNextIndex;
@@ -47,8 +47,6 @@ const checkCustomDates = (array, mode, dates, meta) => {
       break;
     }
   }
-
-  console.log("gonna search last now");
 
   for (let i = 0; i < array.length; i++) {
     if (array[i].Date.getTime() === meta.givenLastDateTime) {
@@ -94,40 +92,6 @@ const checkCustomDates = (array, mode, dates, meta) => {
   );
   return dates;
 };
-// Some bugs here...
-// NEED TO FIX THIS! If theres no data between start and end (for example saturday-sunday) it will give range of fri-mon.
-// const checkCustomDates = (array, mode, dates, meta) => {
-//   let newDates = dates;
-//   console.log(
-//     `checking dates now ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}`
-//   );
-//   console.log("custom dates selected, finding indexes");
-
-//   newDates.base.firstIndex = array.findIndex(
-//     (item) => item.Date.getTime() >= dates.base.first.getTime()
-//   );
-//   console.log(`${dates.base.last.getTime()} vs ${meta.lastTime}`);
-//   if (dates.base.last.getTime() < meta.lastDateTime) {
-//     console.log("inside");
-//     newDates.base.lastIndex =
-//       array.findIndex(
-//         (item) => item.Date.getTime() > newDates.base.last.getTime()
-//       ) - 1;
-//   } else {
-//     newDates.base.lastIndex = meta.lastIndex;
-//   }
-//   console.log(
-//     `base.first ${newDates.base.first.toDateString()}, first index set to ${
-//       newDates.base.firstIndex
-//     } and it has ${array[newDates.base.firstIndex].Date.toDateString()}`
-//   );
-//   console.log(
-//     `base.last ${newDates.base.last.toDateString()}, last index set to ${
-//       newDates.base.lastIndex
-//     } and it has ${array[newDates.base.lastIndex].Date.toDateString()}`
-//   );
-//   return newDates;
-// };
 
 const countDifference = (a, b) => {
   let result = a - b;
@@ -154,35 +118,29 @@ const countSimpleMovingAverage = (array) => {
 const entriesByDate = (array, mode, dates) => {
   // console.log("validation successful, now searching entriesByDate");
   let chosenEntries = [];
-  let addExtras = mode != 0 ? true : false;
-  for (let i = dates.base.firstIndex; i < dates.base.lastIndex + 1; i++) {
+  // let addExtras = mode != 0 ? true : false;
+  for (let i = dates.base.firstIndex; i <= dates.base.lastIndex; i++) {
     // console.log(`round ${i}`);
-    if (addExtras && i === dates.base.firstIndex) {
+    if (i === dates.base.firstIndex) {
       for (let j = mode; j >= 0; j--) {
         chosenEntries.push(array[i - j]);
-        // console.log(
-        //   `add extras so push pre's and first ${array[
-        //     i - j
-        //   ].Date.toDateString()}`
-        // );
+        console.log(`Pushing firsts ${array[i - j].Date.toDateString()}`);
       }
-    } else if (
-      !addExtras &&
-      array[i].Date.getTime() === dates.base.first.getTime()
-    ) {
+    } else {
       chosenEntries.push(array[i]);
+      console.log(`pushed others ${array[i].Date.toDateString()}`);
       // console.log(
       //   `dont add extras so pushed first ${array[i].Date.toDateString()}`
       // );
-    } else if (
-      array[i].Date.getTime() > dates.base.first.getTime() &&
-      array[i].Date.getTime() < dates.base.last.getTime()
-    ) {
-      chosenEntries.push(array[i]);
-      // console.log(`added days between ${array[i].Date.toDateString()}`);
-    } else if (array[i].Date.getTime() === dates.base.last.getTime()) {
-      chosenEntries.push(array[i]);
-      // console.log(`added last ${array[i].Date.toDateString()}`);
+      // } else if (
+      //   array[i].Date.getTime() > dates.base.first.getTime() &&
+      //   array[i].Date.getTime() < dates.base.last.getTime()
+      // ) {
+      //   chosenEntries.push(array[i]);
+      //   // console.log(`added days between ${array[i].Date.toDateString()}`);
+      // } else if (array[i].Date.getTime() === dates.base.last.getTime()) {
+      //   chosenEntries.push(array[i]);
+      //   // console.log(`added last ${array[i].Date.toDateString()}`);
     }
   }
   return chosenEntries;
