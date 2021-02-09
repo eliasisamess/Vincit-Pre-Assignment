@@ -1,11 +1,11 @@
-import readlineSync from "readline-sync";
 import csv from "csvtojson";
+import readlineSync from "readline-sync";
 import { bestSMA5, longestTrends, volumesAndPriceChanges } from "./finders.js";
 import {
   entriesByDate,
   formatDataArray,
-  validateDates,
   isValidDate,
+  validateDates,
 } from "./helpers.js";
 
 let data;
@@ -14,7 +14,7 @@ let path;
 let fileFirstEntry;
 let fileLastEntry;
 let sameDates = false;
-let startOver = true;
+let newFilePath = true;
 let stillAnalyzing = true;
 let dates = {
   custom: null,
@@ -26,8 +26,6 @@ let dates = {
   },
 };
 
-// path = "test_data/Test3.csv";
-
 // APP STARTING POINT
 console.log("Welcome to your personal stock analysist Mr. McDuck!");
 while (stillAnalyzing) {
@@ -35,7 +33,7 @@ while (stillAnalyzing) {
   let fileReadSuccess = false;
   while (!fileReadSuccess) {
     try {
-      if (startOver) {
+      if (newFilePath) {
         path = readlineSync.question(
           "Please provide the name of a csv file to import data from: "
         );
@@ -53,7 +51,6 @@ while (stillAnalyzing) {
       fileReadSuccess = true;
     } catch (err) {
       fileReadSuccess = false;
-      console.log("Catch 1");
       console.log(`${err.name} ${err.message}`);
     }
   }
@@ -62,13 +59,11 @@ while (stillAnalyzing) {
         "Find bullish (upward) trends",
         "Find highest trading volumes and most significant price changes within a day",
         "Find which dates had the best opening price compared to 5 days simple moving average",
-        // "List all entries within data",
       ],
       index = readlineSync.keyInSelect(
         modes,
         "In which mode do you want to analyze this data?"
       );
-    // console.log(`Ok, mode ${index + 1} selected`);
     // According to user's selection, mode is set to 1, 0 or 5. This number means how many
     // entries we need to pick from the data before the starting day, so it works properly
     // on each main function.
@@ -85,7 +80,8 @@ while (stillAnalyzing) {
     let validationSuccess = false;
     while (!validationSuccess) {
       if (!sameDates) {
-        // This if is nested and not as pretty as it could be, but since we are using console UI and readline-sync, it is what it is.
+        // This if is nested and not as pretty as it could be, but since we are using console
+        // UI and readline-sync, it is what it is.
         if (
           readlineSync.keyInYN(
             "Do you want to provide a custom date range within the data?"
@@ -103,8 +99,6 @@ while (stillAnalyzing) {
               );
               validStart = isValidDate(startInput, data, mode, index, true);
             } catch (err) {
-              console.log("Catch 2");
-
               console.log(`${err.name} ${err.message}`);
             }
           }
@@ -126,7 +120,6 @@ while (stillAnalyzing) {
                 dates.base.first
               );
             } catch (err) {
-              console.log("Catch 3");
               console.log(`${err.name} ${err.message}`);
             }
           }
@@ -143,24 +136,15 @@ while (stillAnalyzing) {
         }
       }
       try {
-        // console.log("log dates");
-        // console.log(dates);
-        // let datesNew = dates;
-        // console.log("log dates new:");
-        // console.log(datesNew);
         dates = validateDates(data, mode, dates, index);
         validationSuccess = true;
       } catch (err) {
-        console.log("Catch 4");
-
+        validationSucces = false;
         errorStatus = true;
         console.log(`${err.name} ${err.message}`);
       }
     }
     let selected = entriesByDate(data, mode, dates);
-    // console.log("selected prints this");
-    // console.log(selected);
-    // analyzeStockData(selected, mode, dates);
     if (mode == 1) {
       longestTrends(selected);
     } else if (mode == 0) {
@@ -170,8 +154,6 @@ while (stillAnalyzing) {
     }
     console.log("Task completed.");
   } catch (err) {
-    console.log("Catch 5");
-
     errorStatus = true;
     console.log(`${err.name} ${err.message}`);
   } finally {
@@ -181,9 +163,7 @@ while (stillAnalyzing) {
         `Do you want to continue analyzing this file "${path}"?`
       )
     ) {
-      // 'Y' key was pressed.
-      startOver = false;
-
+      newFilePath = false;
       if (
         !errorStatus &&
         dates.custom &&
@@ -196,17 +176,15 @@ while (stillAnalyzing) {
         sameDates = false;
       }
     } else {
-      // Another key was pressed.
       if (
         stillAnalyzing &&
         readlineSync.keyInYN(`Do you want to continue with another file?`)
       ) {
-        // 'Y' key was pressed.
         sameDates = false;
-        startOver = true;
+        newFilePath = true;
         stillAnalyzing = true;
       } else {
-        startOver = false;
+        newFilePath = false;
         stillAnalyzing = false;
       }
     }
