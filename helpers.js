@@ -1,70 +1,54 @@
-// Count and format functions are returning values as toFixed(5), because Nasdaq
-// recommends to use 5 decimals in most scenarios:
+// Count and format functions are returning values as toFixed(5),
+// because Nasdaq recommends to use 5 decimals in most scenarios:
 // https://www.nasdaq.com/docs/rec-indexation-coefficient.pdf
 
+// If date validations fail, this error will be thrown. No other errors
+// should be possible to be made by the user. Node packages will throw
+// their own errors though.
 function InvalidDatesException(message) {
   this.message = message;
-  this.name = "ERROR: Date validation failed.";
+  this.name = "Error: Date validation failed.";
 }
 
-const checkCustomDates = (array, mode, dates, meta) => {
-  // console.log("checkin custom dates HÖLÖ");
-  // console.log(dates);
-  // let foundExact = null;
+// This function checks and finds the proper indices within the data.
+const checkCustomDates = (array, dates, meta) => {
   let foundFirstIndex;
   let foundFirstDateTime;
   let foundLastIndex;
-  // let foundFirstExactIndex;
-  // let foundFirstNextIndex;
-  // let foundFirstExactDateTime;
-  // let foundFirstNextDateTime;
-  // let enoughDataBetween = false;
-  // console.log("gonna search fisrt noew");
+  // Look for the given starting date within the array.
   for (let i = 0; i < array.length; i++) {
     if (array[i].Date.getTime() === meta.givenFirstDateTime) {
-      console.log(
-        `EXACT object found at ${i} (${array[i].Date.toDateString()})`
-      );
+      // If the exact date is found, add it's index to foundFirstIndex.
       foundFirstIndex = i;
-      console.log(
-        `Exact index set to ${foundFirstIndex} (${array[
-          foundFirstIndex
-        ].Date.toDateString()})`
-      );
       foundFirstDateTime = array[i].Date.getTime();
       break;
     } else if (array[i].Date.getTime() > meta.givenFirstDateTime) {
-      console.log(
-        `NEXT object found at ${i} (${array[i].Date.toDateString()})`
-      );
+      // If exact date is not found, add next possible index.
       foundFirstIndex = i;
-      console.log("Next index set to " + i);
-      console.log(
-        "That index includes this date: " +
-          array[foundFirstIndex].Date.toDateString()
-      );
       foundFirstDateTime = array[i].Date.getTime();
       break;
     }
   }
-
+  // Look for the given ending date within the array.
   for (let i = 0; i < array.length; i++) {
     if (array[i].Date.getTime() === meta.givenLastDateTime) {
-      console.log("Exact last date found at index " + i);
-      console.log("That includes " + array[i].Date.toDateString());
+      // If the exact date is found, add it's index to foundLastIndex.
       foundLastIndex = i;
-      console.log("FoundL ast index set to " + foundLastIndex);
       break;
     } else if (array[i].Date.getTime() > meta.givenLastDateTime) {
-      console.log("Next last date found at index " + i);
-      console.log("That includes " + array[i].Date.toDateString());
+      // If no exact date found, add last index before the next.
+      // First we find the first date AFTER given ending day, but since
+      // that shouldn't be included in the date range, we decrement 1 from i.
       foundLastIndex = i - 1;
-      console.log("found last index set to " + foundLastIndex);
-      console.log("it includes " + array[foundLastIndex].Date.toDateString());
       break;
     }
   }
   if (
+    // If found starting date index is the same or after the ending date we
+    // throw error because there won't be enough data to process later.
+    // If user gives for example date range of Sat Jan 9, 2021 - Sun Jan 10, 2021
+    // error will be thrown because the stock markets have not been open on
+    // weekend and therefore there won't any data process between these dates.
     array[foundFirstIndex].Date.getTime() >=
     array[foundLastIndex].Date.getTime()
   ) {
@@ -72,37 +56,28 @@ const checkCustomDates = (array, mode, dates, meta) => {
       `Not enough data available between given dates.`
     );
   } else {
-    console.log(
-      "enough data found between " +
-        meta.givenFirstDateString +
-        " and " +
-        meta.givenLastDateString
-    );
+    // If everything is ok, we add found indices to dates -object.
+    // Now the dates -object will give the correct information to
+    // the next function in control flow.
     dates.base.firstIndex = foundFirstIndex;
     dates.base.lastIndex = foundLastIndex;
-    // console.log(
-    //   `foundFirstIndex ${foundFirstIndex} foundLastIndex) ${foundLastIndex}`
-    // );
   }
-  console.log(
-    "quadruple check round: " +
-      array[dates.base.firstIndex].Date.toDateString() +
-      " - " +
-      array[dates.base.lastIndex].Date.toDateString()
-  );
   return dates;
 };
 
+// Count difference between stock price change within a day.
 const countDifference = (a, b) => {
   let result = a - b;
   return result.toFixed(5);
 };
 
+// Count percentage difference between opening price and SMA5 price of a day.
 const countPercentageDifference = (a, b) => {
   let result = (a / b) * 100 - 100;
   return result.toFixed(5);
 };
 
+// Count 5 days simple moving average of a day.
 const countSimpleMovingAverage = (array) => {
   let sum = 0;
   array.forEach((item) => {
@@ -112,41 +87,28 @@ const countSimpleMovingAverage = (array) => {
   return result.toFixed(5);
 };
 
-// ENTRIES BY DATE
 // Returns all entries from object between given date range and also dates
-// before the starting day, if needed, according to mode settings
+// before the starting day, if needed, according to mode setting.
 const entriesByDate = (array, mode, dates) => {
-  // console.log("validation successful, now searching entriesByDate");
   let chosenEntries = [];
-  // let addExtras = mode != 0 ? true : false;
+  // Dates -object has been validated before and can be used here.
   for (let i = dates.base.firstIndex; i <= dates.base.lastIndex; i++) {
-    // console.log(`round ${i}`);
     if (i === dates.base.firstIndex) {
+      // If variable mode is 1 or 5, we will add 1 or 5 entries from the data
+      // before the given starting day to get the result we want.
       for (let j = mode; j >= 0; j--) {
         chosenEntries.push(array[i - j]);
-        console.log(`Pushing firsts ${array[i - j].Date.toDateString()}`);
       }
     } else {
       chosenEntries.push(array[i]);
-      console.log(`pushed others ${array[i].Date.toDateString()}`);
-      // console.log(
-      //   `dont add extras so pushed first ${array[i].Date.toDateString()}`
-      // );
-      // } else if (
-      //   array[i].Date.getTime() > dates.base.first.getTime() &&
-      //   array[i].Date.getTime() < dates.base.last.getTime()
-      // ) {
-      //   chosenEntries.push(array[i]);
-      //   // console.log(`added days between ${array[i].Date.toDateString()}`);
-      // } else if (array[i].Date.getTime() === dates.base.last.getTime()) {
-      //   chosenEntries.push(array[i]);
-      //   // console.log(`added last ${array[i].Date.toDateString()}`);
     }
   }
+  // This array is now ready to be sent to the analysis functions.
   return chosenEntries;
-  // }
 };
 
+// Iterate through the given stock data and convert it's objects, keys
+// and values to ease later use and processing of the data.
 const formatDataArray = (array) => {
   let temp = [];
   array.forEach((item) => {
@@ -165,12 +127,14 @@ const formatDataArray = (array) => {
   return temp;
 };
 
+// Format Nasdaq csv currency information to float variables.
 const formatStockMoney = (string) => {
   let formatted = string.replace("$", "");
   formatted = parseFloat(formatted);
   return formatted.toFixed(5);
 };
 
+// Validate user given date input within the readline-sync console UI.
 const isValidDate = (input, array, mode, index, isStart, startInput) => {
   let meta = {
     firstDateTime: array[0].Date.getTime(),
@@ -183,8 +147,11 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
     modeFirstDateTime: array[mode].Date.getTime(),
     modeFirstDateString: array[mode].Date.toDateString(),
   };
+
+  // Create date object from the string input.
   let validateInput = new Date(input);
 
+  // If the date object is not valid, this will throw error
   if (Object.prototype.toString.call(validateInput) === "[object Date]") {
     if (isNaN(validateInput.getTime())) {
       throw new InvalidDatesException(
@@ -198,8 +165,11 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
       "Not a proper date object, please try again and follow the instructions."
     );
   }
+  // Declare some variables to ease reading of this code.
   let givenDateTime = validateInput.getTime();
   let givenDateString = validateInput.toDateString();
+
+  // Throw possible validation errors here.
   if (isStart && givenDateTime < meta.firstDateTime) {
     throw new InvalidDatesException(
       `Given date ${givenDateString} not available in data. First available date for mode ${
@@ -233,14 +203,13 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
       `Given date ${givenDateString} not available in data. Last available date is ${meta.lastDateString}.`
     );
   }
+  // If no errors, return true and continue.
   return true;
 };
-const validateDates = (array, mode, dates, index) => {
-  // console.log("validating dates");
-  // console.log(`mode is ${mode} and index ${index}`);
-  // console.log("dates inside validateDates:");
-  // console.log(dates);
-  // This includes metainformation of the given array
+
+// After validating the user given inputs, we still need to make sure they
+// match the data in array.
+const validateDates = (array, mode, dates) => {
   let meta = {
     firstDateTime: array[0].Date.getTime(),
     lastDateTime: array[array.length - 1].Date.getTime(),
@@ -250,56 +219,21 @@ const validateDates = (array, mode, dates, index) => {
     modeFirstDateTime: array[mode].Date.getTime(),
     modeFirstDateString: array[mode].Date.toDateString(),
   };
-  // console.log("this is meta");
-  // console.log(meta);
   if (!dates.custom) {
+    // If no custom dates were given, choose proper indices for next steps here.
     dates.base.first = array[mode].Date;
     dates.base.last = array[array.length - 1].Date;
     dates.base.firstIndex = mode;
     dates.base.lastIndex = array.length - 1;
-    console.log(
-      "automatically adjusted starting day to " +
-        dates.base.first.toDateString() +
-        " and ending day to " +
-        dates.base.last.toDateString() +
-        " and indexes to " +
-        dates.base.firstIndex +
-        dates.base.lastIndex
-    );
   } else if (dates.custom) {
-    // console.log("custom dates found so lets validate here");
-    // console.log("again dates:");
-    // console.log(dates);
+    // Else if custom dates were given, set variables and find proper indices
+    // or throw errors in checkCustomDates if no data between given dates.
     meta.givenFirstDateTime = dates.base.first.getTime();
     meta.givenLastDateTime = dates.base.last.getTime();
     meta.givenFirstDateString = dates.base.first.toDateString();
     meta.givenLastDateString = dates.base.last.toDateString();
-
-    // if (meta.givenFirstDateTime < meta.firstDateTime) {
-    //   throw new InvalidDatesException(
-    //     `Starting day ${givenFirstDateString} not available in data. First available date is ${meta.firstDateString} `
-    //   );
-    // } else if (meta.givenLastDateTime > meta.lastDateTime) {
-    //   throw new InvalidDatesException(
-    //     `Ending day ${meta.givenLastDateString} not available in data. Last available date is ${meta.lastDateString} `
-    //   );
-    // } else if (meta.givenFirstDateTime < meta.modeFirstDateTime) {
-    //   throw new InvalidDatesException(
-    //     `Starting day ${
-    //       meta.givenFirstDateString
-    //     } not available in data for this mode. First available date for mode ${
-    //       index + 1
-    //     } is ${meta.modeFirstDateString} `
-    //   );
-    //   // } else if (
-    //   //   givenFirstDateTime != meta.modeFirstDateTime ||
-    //   //   givenLastDateTime != meta.lastDateTime
-    //   // ) {
-    // }
-    dates = checkCustomDates(array, mode, dates, meta);
+    dates = checkCustomDates(array, dates, meta);
   }
-  // console.log("now we have validated and it looks like this");
-  // console.log(dates);
   return dates;
 };
 
@@ -309,7 +243,6 @@ export {
   countSimpleMovingAverage,
   entriesByDate,
   formatDataArray,
-  validateDates,
   isValidDate,
-  checkCustomDates,
+  validateDates,
 };
