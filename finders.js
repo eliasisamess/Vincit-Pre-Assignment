@@ -1,11 +1,13 @@
-// IMPORTS
+// This file includes the core functions for analyzing the stock data.
+// These could be updated to more modern array approaches instead of
+// traditional for loops.
+
+// IMPORTS WITHIN APPLICATION
 import {
   countDifference,
   countPercentageDifference,
   countSimpleMovingAverage,
 } from "./helpers.js";
-
-// This file includes the main functions for analyzing the stock data.
 
 // Calculates simple moving average for day N using the average value of
 // closing prices between days N-1 to N-5. Also calculates how many
@@ -14,14 +16,12 @@ import {
 // change percentages. The list is ordered by price change percentages.
 const bestSMA5 = (array) => {
   let listOfResults = [];
-  let startingIndex = 5;
-  for (let i = startingIndex; i < array.length; i++) {
-    let current;
+  for (let i = 5; i < array.length; i++) {
     let tempArray = [];
     for (let j = 5; j > 0; j--) {
       tempArray.push(array[i - j].Open);
     }
-    current = countSimpleMovingAverage(tempArray);
+    let current = countSimpleMovingAverage(tempArray);
     listOfResults.push({
       Date: array[i].Date,
       Open: array[i].Open,
@@ -59,7 +59,6 @@ const longestTrends = (array) => {
   // This variable will be incremented every time the stock price was
   // higher on current day than the day before, while iterating.
   let trendCounter = 0;
-
   // Start the iteration of the given array.
   for (let i = 1; i < array.length; i++) {
     // Current day during this round ofiteration.
@@ -91,21 +90,24 @@ const longestTrends = (array) => {
       });
     }
   }
-  // Output results of the search for longest trends.
   console.log("Printing task results:");
-  console.log(
-    `During given timerange the longest upwards trend was ${
-      trends.firstLength + 1
-    } days and there were ${trends.others.length} other similar trends:`
-  );
-  console.log(
-    `${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}`
-  );
-  trends.others.forEach((item) =>
+  if (trends.firstLength === 0) {
+    console.log("No upwards trends found during given timerange.");
+  } else {
     console.log(
-      `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
-    )
-  );
+      `During given timerange the longest upwards trend was ${
+        trends.firstLength + 1
+      } days and there were ${trends.others.length} other similar trends:`
+    );
+    console.log(
+      `${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}`
+    );
+    trends.others.forEach((item) =>
+      console.log(
+        `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
+      )
+    );
+  }
 };
 
 // Find volumes and price changes within the given date range and outputs
@@ -120,10 +122,9 @@ const volumesAndPriceChanges = (array) => {
       Change: countDifference(item.High, item.Low),
     })
   );
-  listOfResults = listOfResults.sort((a, b) => {
+  listOfResults.sort((a, b) => {
     return b.Volume - a.Volume || b.Change - a.Change;
   });
-  // Output results.
   console.log("Printing task results:");
   listOfResults.forEach((item) =>
     console.log(

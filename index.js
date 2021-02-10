@@ -4,13 +4,15 @@
 // for example Apple stock data can be downloaded from:
 // https://www.nasdaq.com/market-activity/stocks/aapl/historical
 //
+// TestData.csv file is included in the repository for testing purposes.
+//
 // Author: Elias Puukari
 // GitHub: eliasisamess
 // E-mail: elias.puukari@gmail.com
-// Date: Feb 9, 2021
+// Date: Feb 10, 2021
 //
 // NOTES:
-// - Using ESLint / Prettier, that is why semicolons are added, even they're not compulsory
+// - Using ESLint / Prettier, that is why semicolons are added, even though they're not compulsory
 // - Since this is an MVP (minimum viable product), it only has a console UI
 // - Can be easily converted to output data to files or use with external UI
 
@@ -170,7 +172,7 @@ while (stillAnalyzing) {
         dates = validateDates(data, mode, dates);
         validationSuccess = true;
       } catch (err) {
-        validationSucces = false;
+        validationSuccess = false;
         // If we catch an error, this status needs to true, to ensure proper
         // control flow within the application.
         errorStatus = true;
@@ -200,8 +202,6 @@ while (stillAnalyzing) {
         `Do you want to continue analyzing this file "${path}"?`
       )
     ) {
-      // Y -key was pressed and we continue with the same file, so newFilePath
-      // needs to be false here.
       newFilePath = false;
       if (
         // If we continue with the same file, no errors were thrown and
@@ -213,24 +213,19 @@ while (stillAnalyzing) {
           `Keep the same date range as before? (${dates.base.first.toDateString()} - ${dates.base.last.toDateString()})`
         )
       ) {
-        // Y -key was pressed.
         sameDates = true;
       } else {
-        // Another key was pressed.
         sameDates = false;
       }
     } else {
-      // Another key was pressed.
       if (
         stillAnalyzing &&
         readlineSync.keyInYN(`Do you want to continue with another file?`)
       ) {
-        // Y -key was pressed, so we pick up a new file path.
         sameDates = false;
         newFilePath = true;
         stillAnalyzing = true;
       } else {
-        // Another key was pressed, so no new file and analysis has ended.
         // The application will close after this.
         newFilePath = false;
         stillAnalyzing = false;
