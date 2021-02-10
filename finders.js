@@ -1,12 +1,13 @@
-// IMPORTS
+// This file includes the core functions for analyzing the stock data.
+// These could be updated to more modern array approaches instead of
+// traditional for loops.
+
+// IMPORTS WITHIN APPLICATION
 import {
   countDifference,
   countPercentageDifference,
   countSimpleMovingAverage,
 } from "./helpers.js";
-
-// This file includes the core functions for analyzing the stock data.
-// These could be updated to more modern array approaches.
 
 // Calculates simple moving average for day N using the average value of
 // closing prices between days N-1 to N-5. Also calculates how many
@@ -58,7 +59,6 @@ const longestTrends = (array) => {
   // This variable will be incremented every time the stock price was
   // higher on current day than the day before, while iterating.
   let trendCounter = 0;
-
   // Start the iteration of the given array.
   for (let i = 1; i < array.length; i++) {
     // Current day during this round ofiteration.
@@ -90,7 +90,6 @@ const longestTrends = (array) => {
       });
     }
   }
-  // Output results of the search for longest trends.
   console.log("Printing task results:");
   if (trends.firstLength === 0) {
     console.log("No upwards trends found during given timerange.");

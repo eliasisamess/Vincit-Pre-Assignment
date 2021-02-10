@@ -4,13 +4,15 @@
 // for example Apple stock data can be downloaded from:
 // https://www.nasdaq.com/market-activity/stocks/aapl/historical
 //
+// TestData.csv file is included in the repository for testing purposes.
+//
 // Author: Elias Puukari
 // GitHub: eliasisamess
 // E-mail: elias.puukari@gmail.com
 // Date: Feb 9, 2021
 //
 // NOTES:
-// - Using ESLint / Prettier, that is why semicolons are added, even they're not compulsory
+// - Using ESLint / Prettier, that is why semicolons are added, even though they're not compulsory
 // - Since this is an MVP (minimum viable product), it only has a console UI
 // - Can be easily converted to output data to files or use with external UI
 
