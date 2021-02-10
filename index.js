@@ -234,4 +234,4 @@ while (stillAnalyzing) {
   }
 }
 console.log('Okay, bye bye.')
-process.exit()
+process.exit(0)
