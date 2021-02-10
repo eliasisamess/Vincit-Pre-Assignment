@@ -11,4 +11,6 @@ npm install
 npm start
 ```
 
+You can use the included TestData.csv for testing purposes. TestData.csv was downloaded from https://www.nasdaq.com/market-activity/stocks/aapl/historical and it includes Apple stock historical data between Aug 10 2020 and Feb 9 2021.
+
 NOTE! You will need Node.js and npm pre-installed before running this app.
