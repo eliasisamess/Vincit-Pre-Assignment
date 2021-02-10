@@ -131,9 +131,10 @@ while (stillAnalyzing) {
           }
           // If given starting day passes validation, we add it to dates -object.
           dates.base.first = new Date(startInput);
-          console.log(
-            `Custom range starting day set as ${dates.base.first.toDateString()}.`
-          );
+          // UX might be better without showing this in console.
+          // console.log(
+          //   `Custom range starting day set as ${dates.base.first.toDateString()}.`
+          // );
           while (!validEnd) {
             try {
               endInput = readlineSync.question(
@@ -153,9 +154,6 @@ while (stillAnalyzing) {
           }
           // If given ending day passes validation, we add it to dates -object.
           dates.base.last = new Date(endInput);
-          console.log(
-            `Custom range set to ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}.`
-          );
         } else {
           // If no custom date range is used, we set starting and ending dates
           // according to first and last entries found from the csv data.
@@ -171,6 +169,9 @@ while (stillAnalyzing) {
         // matches the chosen mode, so we validate and modify it.
         dates = validateDates(data, mode, dates);
         validationSuccess = true;
+        console.log(
+          `Date range set to ${dates.base.first.toDateString()} - ${dates.base.last.toDateString()}.`
+        );
       } catch (err) {
         validationSuccess = false;
         // If we catch an error, this status needs to true, to ensure proper

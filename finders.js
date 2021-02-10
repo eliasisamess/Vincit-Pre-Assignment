@@ -1,6 +1,4 @@
 // This file includes the core functions for analyzing the stock data.
-// These could be updated to more modern array approaches instead of
-// traditional for loops.
 
 // IMPORTS WITHIN APPLICATION
 import {
@@ -19,7 +17,7 @@ const bestSMA5 = (array) => {
   for (let i = 5; i < array.length; i++) {
     let tempArray = [];
     for (let j = 5; j > 0; j--) {
-      tempArray.push(array[i - j].Open);
+      tempArray.push(array[i - j].Close);
     }
     let current = countSimpleMovingAverage(tempArray);
     listOfResults.push({
@@ -32,7 +30,9 @@ const bestSMA5 = (array) => {
   listOfResults.sort((a, b) => {
     return b.Diff - a.Diff;
   });
-  console.log("Printing task results:");
+  console.log(
+    `Showing difference between the opening price and the SMA5 price of the day:`
+  );
   listOfResults.forEach((item) =>
     console.log(
       `DATE: ${item.Date.toDateString()} OPEN: $${item.Open} SMA5: $${
@@ -42,14 +42,15 @@ const bestSMA5 = (array) => {
   );
 };
 
-// Finds longest bullish (upwards) trends within the stock data.
+// Finds longest bullish (upward) trends within the stock data.
 // Definition of an upward trend is: “Closing price of day N is higher than
 // the closing price of day N-1”. Outputs the maximum amounts of days the stock
 // price was increasing in a row, the date range of the longest trend and also
 // the date ranges of other similar trends within the data.
 const longestTrends = (array) => {
   // This trends -object will include info from the current longest trends while
-  // iterating over the data; the first trend and other similars found after that.
+  // iterating over the data. After iteration it holds the first longest trend and
+  // the other similar ones found after the first.
   let trends = {
     firstLength: 0,
     firstStartingDay: {},
@@ -80,7 +81,7 @@ const longestTrends = (array) => {
       trends.firstStartingDay = array[i - trendCounter].Date;
       trends.firstEndingDay = today.Date;
       trends.others = [];
-    } else if (trends.firstLength === trendCounter) {
+    } else if (trends.firstLength === trendCounter && trendCounter > 0) {
       // If the ended trend was as long as the first longest, we push current
       // trend to others[] array.
       trends.others.push({
@@ -90,12 +91,11 @@ const longestTrends = (array) => {
       });
     }
   }
-  console.log("Printing task results:");
   if (trends.firstLength === 0) {
-    console.log("No upwards trends found during given timerange.");
+    console.log("No upward trends found during given timerange.");
   } else {
     console.log(
-      `During given timerange the longest upwards trend was ${
+      `During given timerange the longest upward trend was ${
         trends.firstLength + 1
       } days and there were ${trends.others.length} other similar trends:`
     );
@@ -110,7 +110,7 @@ const longestTrends = (array) => {
   }
 };
 
-// Find volumes and price changes within the given date range and outputs
+// Find volumes and price changes within the given date range and output
 // them sorted first by volume, then by the most significant stock price
 // change within a day.
 const volumesAndPriceChanges = (array) => {
@@ -125,7 +125,9 @@ const volumesAndPriceChanges = (array) => {
   listOfResults.sort((a, b) => {
     return b.Volume - a.Volume || b.Change - a.Change;
   });
-  console.log("Printing task results:");
+  console.log(
+    `Showing highest trading volumes and most significant stock price changes:`
+  );
   listOfResults.forEach((item) =>
     console.log(
       `DATE: ${item.Date.toDateString()} VOLUME: ${item.Volume} CHANGE: $${

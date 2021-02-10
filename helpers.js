@@ -63,7 +63,7 @@ const countPercentageDifference = (a, b) => {
   return result.toFixed(5);
 };
 
-// Count 5 days simple moving average of a day.
+// Count simple moving average of a day N from an array of closing prices from days N-1 to N-5.
 const countSimpleMovingAverage = (array) => {
   let sum = 0;
   array.forEach((item) => {
