@@ -5,8 +5,8 @@ import {
   countSimpleMovingAverage,
 } from "./helpers.js";
 
-// This file includes the main functions for analyzing the stock data.
-// These could be updated to more modern approaches (map, filter etc)
+// This file includes the core functions for analyzing the stock data.
+// These could be updated to more modern array approaches.
 
 // Calculates simple moving average for day N using the average value of
 // closing prices between days N-1 to N-5. Also calculates how many
@@ -15,14 +15,12 @@ import {
 // change percentages. The list is ordered by price change percentages.
 const bestSMA5 = (array) => {
   let listOfResults = [];
-  let startingIndex = 5;
-  for (let i = startingIndex; i < array.length; i++) {
-    let current;
+  for (let i = 5; i < array.length; i++) {
     let tempArray = [];
     for (let j = 5; j > 0; j--) {
       tempArray.push(array[i - j].Open);
     }
-    current = countSimpleMovingAverage(tempArray);
+    let current = countSimpleMovingAverage(tempArray);
     listOfResults.push({
       Date: array[i].Date,
       Open: array[i].Open,
@@ -125,10 +123,9 @@ const volumesAndPriceChanges = (array) => {
       Change: countDifference(item.High, item.Low),
     })
   );
-  listOfResults = listOfResults.sort((a, b) => {
+  listOfResults.sort((a, b) => {
     return b.Volume - a.Volume || b.Change - a.Change;
   });
-  // Output results.
   console.log("Printing task results:");
   listOfResults.forEach((item) =>
     console.log(
