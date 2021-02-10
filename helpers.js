@@ -109,23 +109,39 @@ const entriesByDate = (array, mode, dates) => {
 
 // Iterate through the given stock data and convert it's objects, keys
 // and values to ease later use and processing of the data.
-const formatDataArray = (array) => {
-  let temp = [];
-  array.forEach((item) => {
-    temp.push({
+const formatDataArray = (array) =>
+  array
+    .map((item) => ({
       Date: new Date(item.Date),
       Close: formatStockMoney(item["Close/Last"]),
       Volume: parseInt(item.Volume),
       Open: formatStockMoney(item.Open),
       High: formatStockMoney(item.High),
       Low: formatStockMoney(item.Low),
+    }))
+    .sort((a, b) => {
+      return a.Date - b.Date;
     });
-  });
-  temp.sort((a, b) => {
-    return a.Date - b.Date;
-  });
-  return temp;
-};
+
+// // Iterate through the given stock data and convert it's objects, keys
+// // and values to ease later use and processing of the data.
+// const formatDataArray = (array) => {
+//   let temp = [];
+//   array.forEach((item) => {
+//     temp.push({
+//       Date: new Date(item.Date),
+//       Close: formatStockMoney(item["Close/Last"]),
+//       Volume: parseInt(item.Volume),
+//       Open: formatStockMoney(item.Open),
+//       High: formatStockMoney(item.High),
+//       Low: formatStockMoney(item.Low),
+//     });
+//   });
+//   temp.sort((a, b) => {
+//     return a.Date - b.Date;
+//   });
+//   return temp;
+// };
 
 // Format Nasdaq csv currency information to float variables.
 const formatStockMoney = (string) => {
