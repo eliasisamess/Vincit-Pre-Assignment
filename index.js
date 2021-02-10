@@ -9,7 +9,7 @@
 // Author: Elias Puukari
 // GitHub: eliasisamess
 // E-mail: elias.puukari@gmail.com
-// Date: Feb 9, 2021
+// Date: Feb 10, 2021
 //
 // NOTES:
 // - Using ESLint / Prettier, that is why semicolons are added, even though they're not compulsory
