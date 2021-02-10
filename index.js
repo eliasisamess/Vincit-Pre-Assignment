@@ -170,7 +170,7 @@ while (stillAnalyzing) {
         dates = validateDates(data, mode, dates);
         validationSuccess = true;
       } catch (err) {
-        validationSucces = false;
+        validationSuccess = false;
         // If we catch an error, this status needs to true, to ensure proper
         // control flow within the application.
         errorStatus = true;
@@ -200,8 +200,6 @@ while (stillAnalyzing) {
         `Do you want to continue analyzing this file "${path}"?`
       )
     ) {
-      // Y -key was pressed and we continue with the same file, so newFilePath
-      // needs to be false here.
       newFilePath = false;
       if (
         // If we continue with the same file, no errors were thrown and
@@ -213,24 +211,19 @@ while (stillAnalyzing) {
           `Keep the same date range as before? (${dates.base.first.toDateString()} - ${dates.base.last.toDateString()})`
         )
       ) {
-        // Y -key was pressed.
         sameDates = true;
       } else {
-        // Another key was pressed.
         sameDates = false;
       }
     } else {
-      // Another key was pressed.
       if (
         stillAnalyzing &&
         readlineSync.keyInYN(`Do you want to continue with another file?`)
       ) {
-        // Y -key was pressed, so we pick up a new file path.
         sameDates = false;
         newFilePath = true;
         stillAnalyzing = true;
       } else {
-        // Another key was pressed, so no new file and analysis has ended.
         // The application will close after this.
         newFilePath = false;
         stillAnalyzing = false;

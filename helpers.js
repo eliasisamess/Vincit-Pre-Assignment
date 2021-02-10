@@ -12,43 +12,29 @@ function InvalidDatesException(message) {
 
 // This function checks and finds the proper indices within the data.
 const checkCustomDates = (array, dates, meta) => {
-  let foundFirstIndex;
-  let foundFirstDateTime;
-  let foundLastIndex;
-  // Look for the given starting date within the array.
-  for (let i = 0; i < array.length; i++) {
-    if (array[i].Date.getTime() === meta.givenFirstDateTime) {
-      // If the exact date is found, add it's index to foundFirstIndex.
-      foundFirstIndex = i;
-      foundFirstDateTime = array[i].Date.getTime();
-      break;
-    } else if (array[i].Date.getTime() > meta.givenFirstDateTime) {
-      // If exact date is not found, add next possible index.
-      foundFirstIndex = i;
-      foundFirstDateTime = array[i].Date.getTime();
-      break;
-    }
-  }
+  // Look for the given starting date or the first possible after given date.
+  let foundFirstIndex = array.findIndex(
+    (item) =>
+      item.Date.getTime() === meta.givenFirstDateTime ||
+      item.Date.getTime() > meta.givenFirstDateTime
+  );
   // Look for the given ending date within the array.
-  for (let i = 0; i < array.length; i++) {
-    if (array[i].Date.getTime() === meta.givenLastDateTime) {
-      // If the exact date is found, add it's index to foundLastIndex.
-      foundLastIndex = i;
-      break;
-    } else if (array[i].Date.getTime() > meta.givenLastDateTime) {
-      // If no exact date found, add last index before the next.
-      // First we find the first date AFTER given ending day, but since
-      // that shouldn't be included in the date range, we decrement 1 from i.
-      foundLastIndex = i - 1;
-      break;
-    }
+  let foundLastIndex = array.findIndex(
+    (item) =>
+      // When a date is found, add it's index to foundLastIndex.
+      item.Date.getTime() === meta.givenLastDateTime ||
+      item.Date.getTime() > meta.givenLastDateTime
+  );
+  // If the found index date is after the given last date, pick one index before.
+  if (array[foundLastIndex].Date.getTime() > meta.givenLastDateTime) {
+    foundLastIndex--;
   }
+  // If found starting date index is the same or after the ending date we
+  // throw error because there won't be enough data to process later.
+  // For example, if user give a date range of Sat Jan 9, 2021 - Sun Jan 10, 2021,
+  // an error will be thrown because the stock markets have not been open on
+  // weekend and therefore there won't any data to process between these dates.
   if (
-    // If found starting date index is the same or after the ending date we
-    // throw error because there won't be enough data to process later.
-    // If user gives for example date range of Sat Jan 9, 2021 - Sun Jan 10, 2021
-    // error will be thrown because the stock markets have not been open on
-    // weekend and therefore there won't any data process between these dates.
     array[foundFirstIndex].Date.getTime() >=
     array[foundLastIndex].Date.getTime()
   ) {
@@ -56,7 +42,7 @@ const checkCustomDates = (array, dates, meta) => {
       `Not enough data available between given dates.`
     );
   } else {
-    // If everything is ok, we add found indices to dates -object.
+    // If everything is ok, we add the found indices to dates -object.
     // Now the dates -object will give the correct information to
     // the next function in control flow.
     dates.base.firstIndex = foundFirstIndex;
@@ -90,21 +76,19 @@ const countSimpleMovingAverage = (array) => {
 // Returns all entries from object between given date range and also dates
 // before the starting day, if needed, according to mode setting.
 const entriesByDate = (array, mode, dates) => {
-  let chosenEntries = [];
-  // Dates -object has been validated before and can be used here.
-  for (let i = dates.base.firstIndex; i <= dates.base.lastIndex; i++) {
-    if (i === dates.base.firstIndex) {
+  // Use Array.prototype.filter to find matching dates
+  return array.filter((item, index) => {
+    if (
+      // Dates -object has been validated before and can be easily used here.
       // If variable mode is 1 or 5, we will add 1 or 5 entries from the data
-      // before the given starting day to get the result we want.
-      for (let j = mode; j >= 0; j--) {
-        chosenEntries.push(array[i - j]);
-      }
-    } else {
-      chosenEntries.push(array[i]);
+      // before the given starting day to get the result we want. When mode
+      // is 0, the first index to be added will be the firstIndex.
+      index >= dates.base.firstIndex - mode &&
+      index <= dates.base.lastIndex
+    ) {
+      return item;
     }
-  }
-  // This array is now ready to be sent to the analysis functions.
-  return chosenEntries;
+  });
 };
 
 // Iterate through the given stock data and convert it's objects, keys
@@ -122,26 +106,6 @@ const formatDataArray = (array) =>
     .sort((a, b) => {
       return a.Date - b.Date;
     });
-
-// // Iterate through the given stock data and convert it's objects, keys
-// // and values to ease later use and processing of the data.
-// const formatDataArray = (array) => {
-//   let temp = [];
-//   array.forEach((item) => {
-//     temp.push({
-//       Date: new Date(item.Date),
-//       Close: formatStockMoney(item["Close/Last"]),
-//       Volume: parseInt(item.Volume),
-//       Open: formatStockMoney(item.Open),
-//       High: formatStockMoney(item.High),
-//       Low: formatStockMoney(item.Low),
-//     });
-//   });
-//   temp.sort((a, b) => {
-//     return a.Date - b.Date;
-//   });
-//   return temp;
-// };
 
 // Format Nasdaq csv currency information to float variables.
 const formatStockMoney = (string) => {
@@ -163,10 +127,8 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
     modeFirstDateTime: array[mode].Date.getTime(),
     modeFirstDateString: array[mode].Date.toDateString(),
   };
-
   // Create date object from the string input.
   let validateInput = new Date(input);
-
   // If the date object is not valid, this will throw error
   if (Object.prototype.toString.call(validateInput) === "[object Date]") {
     if (isNaN(validateInput.getTime())) {
@@ -184,7 +146,6 @@ const isValidDate = (input, array, mode, index, isStart, startInput) => {
   // Declare some variables to ease reading of this code.
   let givenDateTime = validateInput.getTime();
   let givenDateString = validateInput.toDateString();
-
   // Throw possible validation errors here.
   if (isStart && givenDateTime < meta.firstDateTime) {
     throw new InvalidDatesException(

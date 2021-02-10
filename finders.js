@@ -6,6 +6,7 @@ import {
 } from "./helpers.js";
 
 // This file includes the main functions for analyzing the stock data.
+// These could be updated to more modern approaches (map, filter etc)
 
 // Calculates simple moving average for day N using the average value of
 // closing prices between days N-1 to N-5. Also calculates how many
@@ -93,19 +94,23 @@ const longestTrends = (array) => {
   }
   // Output results of the search for longest trends.
   console.log("Printing task results:");
-  console.log(
-    `During given timerange the longest upwards trend was ${
-      trends.firstLength + 1
-    } days and there were ${trends.others.length} other similar trends:`
-  );
-  console.log(
-    `${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}`
-  );
-  trends.others.forEach((item) =>
+  if (trends.firstLength === 0) {
+    console.log("No upwards trends found during given timerange.");
+  } else {
     console.log(
-      `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
-    )
-  );
+      `During given timerange the longest upwards trend was ${
+        trends.firstLength + 1
+      } days and there were ${trends.others.length} other similar trends:`
+    );
+    console.log(
+      `${trends.firstStartingDay.toDateString()} - ${trends.firstEndingDay.toDateString()}`
+    );
+    trends.others.forEach((item) =>
+      console.log(
+        `${item.startingDay.toDateString()} - ${item.endingDay.toDateString()}`
+      )
+    );
+  }
 };
 
 // Find volumes and price changes within the given date range and outputs
