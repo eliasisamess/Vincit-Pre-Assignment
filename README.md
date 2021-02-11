@@ -11,6 +11,6 @@ npm install
 npm start
 ```
 
-NOTE! You will need Node.js and npm pre-installed before running this app.
+NOTE! You will need Node.js (version 14.8) and npm pre-installed before running this app.
 
 You can use the TestData.csv file from the repository for testing purposes. It includes historical data of Apple stocks between Aug 10, 2020 - Feb 9, 2021 and was downloaded from https://www.nasdaq.com/market-activity/stocks/aapl/historical.
